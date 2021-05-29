@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "101977169313",
+    "project_id": "maulaji-messenger",
+    "storage_bucket": "maulaji-messenger.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101977169313:android:3e9b12014f86fd97467fe0",
+        "android_client_info": {
+          "package_name": "com.maulaji.maulajimessenger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "101977169313-eeiml068d1rk4kep5f9o027me8io6gl9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApMFV6RHW7X1il6dyhZCouOVoffCmvkgk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "101977169313-eeiml068d1rk4kep5f9o027me8io6gl9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
