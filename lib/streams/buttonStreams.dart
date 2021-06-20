@@ -289,3 +289,38 @@ class LastMessagesStream{
     return;
   }
 }
+
+class NewIncCallModel{
+  bool status;
+  dynamic body;
+  NewIncCallModel({this.status,this.body});
+}
+class NewIncommingCallBroadCaster{
+  static NewIncommingCallBroadCaster model = null;
+  final StreamController<NewIncCallModel> _Controller = StreamController<NewIncCallModel>.broadcast();
+
+  Stream<NewIncCallModel> get outData => _Controller.stream;
+
+  Sink<NewIncCallModel> get inData => _Controller.sink;
+
+  dataReload(NewIncCallModel status) {
+    fetch().then((value) => inData.add(status));
+  }
+
+  void dispose() {
+    _Controller.close();
+  }
+
+  static NewIncommingCallBroadCaster getInstance() {
+    if (model == null) {
+      model = new NewIncommingCallBroadCaster();
+      return model;
+    } else {
+      return model;
+    }
+  }
+
+  Future<void> fetch() async {
+    return;
+  }
+}

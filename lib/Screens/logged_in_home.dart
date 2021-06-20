@@ -28,7 +28,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
-import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -165,7 +164,30 @@ class _State extends State<Home> {
           widget.isRingTonePlaying = true;
         });
         //   audioPlayer.seek(Duration(seconds: 0)).then((value) {});
-        audioPlayer.resume();
+      //  audioPlayer.resume();
+
+        audioPlayer = await AudioPlayer();
+        if (kIsWeb) {
+          await audioPlayer.setUrl("assets/assets/ring.mp3", isLocal: true);
+          audioPlayer.play("assets/assets/ring.mp3",isLocal: true);
+        } else {
+          const kUrl1 = "assets/ring.mp3";
+          final bytes = await  rootBundle.load('assets/ring.mp3');
+          //final bytes = await rootBundle.load('assets/ring.mp3');
+          final dir = await getApplicationDocumentsDirectory();
+          final file = File('${dir.path}/audio.mp3');
+          await file.writeAsBytes(bytes.buffer
+              .asUint8List(bytes.offsetInBytes, bytes.lengthInBytes));
+          //   await file.writeAsBytes(bytes);
+
+          audioPlayer.play(file.path,isLocal: true);
+
+
+        }
+
+
+
+
         // audioPlayer.onPlayerCompletion.listen((event) {
         //   audioPlayer.seek(Duration(seconds: 0)).then((value) {
         //     audioPlayer.resume();
@@ -186,16 +208,57 @@ class _State extends State<Home> {
       });
     }
   }
+  initAudioAndPlay() async {
+    audioPlayer = await AudioPlayer();
+    if (kIsWeb) {
+      await audioPlayer.setUrl("assets/assets/ring.mp3", isLocal: true);
+      audioPlayer.play("assets/assets/ring.mp3",isLocal: true);
+    } else {
+      const kUrl1 = "assets/ring.mp3";
+      final bytes = await  rootBundle.load('assets/ring.mp3');
+      //final bytes = await rootBundle.load('assets/ring.mp3');
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/audio.mp3');
+      await file.writeAsBytes(bytes.buffer
+          .asUint8List(bytes.offsetInBytes, bytes.lengthInBytes));
+      //   await file.writeAsBytes(bytes);
 
+      audioPlayer.play(file.path,isLocal: true);
+
+
+    }
+
+    // await audioPlayer.setUrl("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3");
+  }
   initAudio() async {
     audioPlayer = await AudioPlayer();
     if (kIsWeb) {
       await audioPlayer.setUrl("assets/assets/ring.mp3", isLocal: true);
     } else {
+      const kUrl1 = "assets/ring.mp3";
+      final bytes = await  rootBundle.load('assets/ring.mp3');
+      //final bytes = await rootBundle.load('assets/ring.mp3');
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/audio.mp3');
+      await file.writeAsBytes(bytes.buffer
+          .asUint8List(bytes.offsetInBytes, bytes.lengthInBytes));
+   //   await file.writeAsBytes(bytes);
+
+      audioPlayer.setUrl(file.path, isLocal: true);
+      //audioPlayer.resume();
+
+
+      // await audioPlayer.setUrl("assets/assets/ring.mp3", isLocal: true);
+      // await audioPlayer.setReleaseMode(ReleaseMode.STOP); // set release mode so that it never releases
+      //
+      // // on button click
+      // await audioPlayer.resume();
+
+
+      //
       // final byteData = await rootBundle.load('assets/ring.mp3');
       //
-      // final file =
-      //     File('${(await getTemporaryDirectory()).path}/ring.mp3');
+      // final file = File('${(await getTemporaryDirectory()).path}/ring.mp3');
       // await file.writeAsBytes(byteData.buffer
       //     .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
       // //  audioPlayer.play(file.path,isLocal: true);
@@ -242,6 +305,15 @@ class _State extends State<Home> {
         widget.sectorOneContentWidth = MediaQuery.of(context).size.width;
       });
     }
+
+
+    if(widget.shouldShowIncomming)
+      return Scaffold(body: showIncommingScreen(widget.socket),);
+    else return Scaffold(body: SectorOne(socket: widget.socket,
+        width: widget.sectorOneContentWidth,
+        isMobileView: widget.showMobileView,
+        auth: widget.auth,
+        chatWidgetUpdate: chatWidgetUpdate),);
 
     return widget.shouldShowIncomming?Scaffold(body: showIncommingScreen(widget.socket),): Scaffold(
       body: !widget.showMobileView
@@ -649,6 +721,7 @@ class _State extends State<Home> {
   void initCallIntent(String callTYpe, String ownid, String partner,
       bool isCaller, BuildContext context, FirebaseAuth auth) async {
     //socket2.emit("calldial",{"partner":partner});
+    NewIncommingCallBroadCaster.getInstance().dataReload(NewIncCallModel(status: false));
     setState(() {
       widget.shouldShowIncomming = false;
     });
@@ -1071,6 +1144,8 @@ class _State extends State<Home> {
         print("call income hit");
         print(data);
         widget.socket.emit("ringing", {"id": widget.auth.currentUser.uid});
+       // NewIncommingCallBroadCaster.getInstance().dataReload(true);
+        NewIncommingCallBroadCaster.getInstance().dataReload(NewIncCallModel(status: true,body: data));
       });
     } catch (e) {}
     // Timer.periodic(Duration(milliseconds: 1000), (timer) {
@@ -1154,6 +1229,7 @@ class _State extends State<Home> {
           widget.shouldShowIncomming = false;
         });
         StopRing();
+        NewIncommingCallBroadCaster.getInstance().dataReload(NewIncCallModel(status: false,));
       });
     }
 
@@ -1162,7 +1238,9 @@ class _State extends State<Home> {
         // Your state change code goes here
         playLocal();
         setState(() {
-          playLocal();
+         // playLocal();
+         // NewIncommingCallBroadCaster.getInstance().dataReload(true);
+          NewIncommingCallBroadCaster.getInstance().dataReload(NewIncCallModel(status: true,body: data));
           widget.shouldShowIncomming = true;
           widget.partnerName =
               data["callerName"] != null ? data["callerName"] : "No Name";
@@ -1203,7 +1281,7 @@ class _State extends State<Home> {
           fit: BoxFit.cover,
         )));
       } else {
-        call(dynamic data) {
+        call(dynamic data,String type) {
           print(data);
           try {
             // initCallIntent("v", widget.auth.currentUser.uid, data, true,
@@ -1319,22 +1397,25 @@ class _State extends State<Home> {
                               widget.partnerId;
                           if (partnerID != null) {
                             try {
-                              CommonFunctions(
-                                  auth: widget.auth)
-                                  .initCallIntent(socket: socket,
-                                  callTYpe: "v",
-                                  ownid: widget
-                                      .auth
-                                      .currentUser
-                                      .uid,
-                                  partner: partnerID,
-                                  isCaller: false,
-                                  context: context);
+                             if(mounted){
+                               CommonFunctions(
+                                   auth: widget.auth)
+                                   .initCallIntent(socket: socket,
+                                   callTYpe: "v",
+                                   ownid: widget
+                                       .auth
+                                       .currentUser
+                                       .uid,
+                                   partner: partnerID,
+                                   isCaller: false,
+                                   context: context);
 
-                              setState(() {
-                                widget.shouldShowIncomming =
-                                false;
-                              });
+                               NewIncommingCallBroadCaster.getInstance().dataReload(NewIncCallModel(status: false));
+                               setState(() {
+                                 widget.shouldShowIncomming =
+                                 false;
+                               });
+                             }
                             } catch (e) {
                               print("exceptio of call");
                               print(e.toString());
@@ -1370,11 +1451,13 @@ class _State extends State<Home> {
                     child: InkWell(
                       onTap: () {
                         StopRing();
-                        AppSignal().initSignal().emit(
+                        socket.emit(
                             "reject", {
                           "id":
                           widget.auth.currentUser.uid
                         });
+                        NewIncommingCallBroadCaster.getInstance().dataReload(NewIncCallModel(status: false));
+
                         setState(() {
                           widget.shouldShowIncomming =
                           false;
@@ -1858,7 +1941,7 @@ class _LastChatHistoryWidgetState extends State<LastChatHistoryWidget> {
     List d = [];
 
     print("should download last chats");
-    // AppSignal().initSignal().on(widget.firebaseAuth.currentUser.uid, (data) {
+    // widget.signal.on(widget.firebaseAuth.currentUser.uid, (data) {
     //  // print(data.toString());
     //
     //   data.forEach((k,v) {
@@ -2078,39 +2161,39 @@ class _LastChatHistoryWidgetState extends State<LastChatHistoryWidget> {
     //
     // });
     //
-    // AppSignal().initSignal().emit("getLastMesage",{"id":widget.firebaseAuth.currentUser.uid});
+    // widget.signal.emit("getLastMesage",{"id":widget.firebaseAuth.currentUser.uid});
   }
 
-  Widget getUserName(d) {
-    // return Text(d);
-    String fndID = d;
-    AppSignal().initSignal().on(fndID + "_profile", (data) {
-      print("by second");
-      print(data);
-      if (mounted) {
-        try {
-          FetchUserInfoStream.getInstance().dataReload(data);
-        } catch (e) {}
-      }
-    });
-    // AppSignal().initSignal().emit("saveProfileData",{"uid":widget.auth.currentUser.uid,"name":"mukul"});
-    AppSignal().initSignal().emit("getUserProfile", {"uid": fndID});
-
-    return StreamBuilder<dynamic>(
-        stream: FetchUserInfoStream.getInstance().outData,
-        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-          print("from stream");
-          print(snapshot.data.toString());
-          if (snapshot.hasData && snapshot.data != null) {
-            return Text(
-              snapshot.data["name"],
-              style: TextStyle(),
-            );
-          } else {
-            return Text("Please wait");
-          }
-        });
-  }
+  // Widget getUserName(d) {
+  //   // return Text(d);
+  //   String fndID = d;
+  //   widget.signal.on(fndID + "_profile", (data) {
+  //     print("by second");
+  //     print(data);
+  //     if (mounted) {
+  //       try {
+  //         FetchUserInfoStream.getInstance().dataReload(data);
+  //       } catch (e) {}
+  //     }
+  //   });
+  //   // widget.signal.emit("saveProfileData",{"uid":widget.auth.currentUser.uid,"name":"mukul"});
+  //   widget.signal.emit("getUserProfile", {"uid": fndID});
+  //
+  //   return StreamBuilder<dynamic>(
+  //       stream: FetchUserInfoStream.getInstance().outData,
+  //       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+  //         print("from stream");
+  //         print(snapshot.data.toString());
+  //         if (snapshot.hasData && snapshot.data != null) {
+  //           return Text(
+  //             snapshot.data["name"],
+  //             style: TextStyle(),
+  //           );
+  //         } else {
+  //           return Text("Please wait");
+  //         }
+  //       });
+  // }
 }
 
 prePareUserPhoto(FirebaseAuth auth, String uid) {
@@ -3022,7 +3105,7 @@ class _ChatMesageLitState extends State<ChatMesageLit> {
         } catch (e) {}
       }
     });
-    // AppSignal().initSignal().emit("saveProfileData",{"uid":widget.auth.currentUser.uid,"name":"mukul"});
+    // widget.signal.emit("saveProfileData",{"uid":widget.auth.currentUser.uid,"name":"mukul"});
     widget.socket.emit("getUserProfile", {"uid": fndID});
 
     return StreamBuilder<dynamic>(
@@ -3069,338 +3152,358 @@ class _GroupChatThreadState extends State<GroupChatThread> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          Positioned(
-              top: 75,
-              left: 0,
-              right: 0,
-              bottom: 70,
-              child: CreateMessageStream(widget.socket,
-                  widget.grpInfo["id"], widget.auth.currentUser.uid)),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Wrap(
-              children: [
-                Container(
-                  height: 60,
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        bottom: 10,
-                        left: 10,
-                        right: 130,
-                        child: Container(
-                          height: 60,
-                          child: Center(
-                            child: Card(
-                              elevation: 0,
-                              color: Color.fromARGB(255, 238, 246, 255),
-                              child: Container(
-                                child: new TextField(
-                                  onSubmitted: (val) async {
-                                    sendMessageGroup(widget.socket,
-                                        val, "txt", "-", widget.grpInfo["id"]);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
+      child: Scaffold(
+        body: Stack(
+          children: [
+            Positioned(
+                top: 75,
+                left: 0,
+                right: 0,
+                bottom: 70,
+                child: CreateMessageStream(widget.socket,
+                    widget.grpInfo["id"], widget.auth.currentUser.uid)),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Wrap(
+                children: [
+                  Container(
+                    height: 60,
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          bottom: 10,
+                          left: 10,
+                          right: 130,
+                          child: Container(
+                            height: 60,
+                            child: Center(
+                              child: Card(
+                                elevation: 0,
+                                color: Color.fromARGB(255, 238, 246, 255),
+                                child: Container(
+                                  child: new TextField(
+                                    onSubmitted: (val) async {
+                                      sendMessageGroup(widget.socket,
+                                          val, "txt", "-", widget.grpInfo["id"]);
 
-                                    controllerGrp.clear();
-                                  },
-                                  controller: controllerGrp,
-                                  textAlign: TextAlign.left,
-                                  decoration: new InputDecoration(
-                                    hintText: "Type your message",
-                                    contentPadding: EdgeInsets.all(10),
-                                    border: InputBorder.none,
+                                      controllerGrp.clear();
+                                    },
+                                    controller: controllerGrp,
+                                    textAlign: TextAlign.left,
+                                    decoration: new InputDecoration(
+                                      hintText: "Type your message",
+                                      contentPadding: EdgeInsets.all(10),
+                                      border: InputBorder.none,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      Positioned(
-                        bottom: 10,
-                        right: 10,
-                        child: Container(
-                          height: 60,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Center(
-                                child: new InkWell(
-                                  onTap: () async {
-                                    //widget.room
-                                    FilePickerResult result =
-                                        await FilePicker.platform.pickFiles();
+                        Positioned(
+                          bottom: 10,
+                          right: 10,
+                          child: Container(
+                            height: 60,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Center(
+                                  child: new InkWell(
+                                    onTap: () async {
+                                      //widget.room
+                                      FilePickerResult result =
+                                          await FilePicker.platform.pickFiles();
 
-                                    if (result != null) {
-                                      PlatformFile file = result.files.first;
+                                      if (result != null) {
+                                        PlatformFile file = result.files.first;
 
-                                      print(file.name);
-                                      // print(file.bytes);
-                                      // _base64 = BASE64.encode(response.bodyBytes);
-                                      String base = base64.encode(file.bytes);
+                                        print(file.name);
+                                        // print(file.bytes);
+                                        // _base64 = BASE64.encode(response.bodyBytes);
+                                        String base = base64.encode(file.bytes);
 
-                                      String url =
-                                          "https://talk.maulaji.com/uploadfilemessenger.php";
+                                        String url =
+                                            "https://talk.maulaji.com/uploadfilemessenger.php";
 
-                                      print(file.size);
-                                      print(file.extension);
-                                      print(file.path);
-                                      //print("base");
-                                      // print(base);
+                                        print(file.size);
+                                        print(file.extension);
+                                        print(file.path);
+                                        //print("base");
+                                        // print(base);
 
-                                      var response = await http.post(
-                                          Uri.parse(url),
-                                          body: jsonEncode({
-                                            'name': file.name,
-                                            'file': base,
-                                            'ex': file.extension
-                                          }));
-                                      print(
-                                          'Response status: ${response.statusCode}');
-                                      print(response.body);
-                                      dynamic res = jsonDecode(response.body);
-                                      if (res["status"]) {
-                                        // sendMessageGroup(
-                                        //     widget.firestore,
-                                        //     widget.auth,
-                                        //     res["path"],
-                                        //     file.extension,
-                                        //     file.name,
-                                        //     widget.documentSnapshot.id);
+                                        var response = await http.post(
+                                            Uri.parse(url),
+                                            body: jsonEncode({
+                                              'name': file.name,
+                                              'file': base,
+                                              'ex': file.extension
+                                            }));
+                                        print(
+                                            'Response status: ${response.statusCode}');
+                                        print(response.body);
+                                        dynamic res = jsonDecode(response.body);
+                                        if (res["status"]) {
+                                          // sendMessageGroup(
+                                          //     widget.firestore,
+                                          //     widget.auth,
+                                          //     res["path"],
+                                          //     file.extension,
+                                          //     file.name,
+                                          //     widget.documentSnapshot.id);
+                                        } else {
+                                          print("could not save");
+                                        }
                                       } else {
-                                        print("could not save");
+                                        // User canceled the picker
                                       }
-                                    } else {
-                                      // User canceled the picker
-                                    }
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Icon(
-                                      Icons.attach_file,
-                                      color: Theme.of(context).primaryColor,
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Icon(
+                                        Icons.attach_file,
+                                        color: Theme.of(context).primaryColor,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              Center(
-                                child: new InkWell(
-                                  onTap: () async {
-                                    //widget.room
+                                Center(
+                                  child: new InkWell(
+                                    onTap: () async {
+                                      //widget.room
 
-                                    setState(() {
-                                      widget.showEmojiList =
-                                          !widget.showEmojiList;
-                                    });
-                                    print("emoji " +
-                                        widget.showEmojiList.toString());
-                                  },
-                                  child:Padding(
-                                    padding: const EdgeInsets.all(0.0),
-                                    child: Text(
-                                      Emoji.all().first.char,
-                                      style: TextStyle(fontSize: 22),
+                                      setState(() {
+                                        widget.showEmojiList =
+                                            !widget.showEmojiList;
+                                      });
+                                      print("emoji " +
+                                          widget.showEmojiList.toString());
+                                    },
+                                    child:Padding(
+                                      padding: const EdgeInsets.all(0.0),
+                                      child: Text(
+                                        Emoji.all().first.char,
+                                        style: TextStyle(fontSize: 22),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              Center(
-                                child: new InkWell(
-                                  onTap: () async {
-                                    //widget.room
-                                    sendMessageGroup(widget.socket,
-                                        Emoji.all()[139].char, "txt", "-", widget.grpInfo["id"]);
+                                Center(
+                                  child: new InkWell(
+                                    onTap: () async {
+                                      //widget.room
+                                      sendMessageGroup(widget.socket,
+                                          Emoji.all()[139].char, "txt", "-", widget.grpInfo["id"]);
 
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(0.0),
-                                    child: Text(
-                                      Emoji.all()[139].char,
-                                      style: TextStyle(fontSize: 22),
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(0.0),
+                                      child: Text(
+                                        Emoji.all()[139].char,
+                                        style: TextStyle(fontSize: 22),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              Center(
-                                child: new InkWell(
-                                  onTap: () async {
-                                    //widget.room
-                                    String text = controllerGrp.text;
-                                    // sendMessageGroup(
-                                    //     widget.firestore,
-                                    //     widget.auth,
-                                    //     text,
-                                    //     "txt",
-                                    //     "-",
-                                    //     widget.documentSnapshot.id);
-                                    controllerGrp.clear();
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Icon(
-                                      Icons.send,
-                                      color: Colors.blue,
+                                Center(
+                                  child: new InkWell(
+                                    onTap: () async {
+                                      //widget.room
+                                      String text = controllerGrp.text;
+                                      // sendMessageGroup(
+                                      //     widget.firestore,
+                                      //     widget.auth,
+                                      //     text,
+                                      //     "txt",
+                                      //     "-",
+                                      //     widget.documentSnapshot.id);
+                                      controllerGrp.clear();
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Icon(
+                                        Icons.send,
+                                        color: Colors.blue,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                  widget.showEmojiList
+                      ? Container(
+                          height: 300,
+                          color: Colors.white,
+                          // width: 500,
+                          child: GridView.builder(
+                            itemCount:widget.selectedEnojis.length,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: MediaQuery.of(context).size.width>700?20:8),
+                            itemBuilder: (BuildContext context, int index) {
+                              return InkWell(
+                                  onTap: () {
+                                    controllerGrp.text = controllerGrp.text +
+                                        widget.selectedEnojis[index].char;
+                                  },
+                                  child: Center(
+                                      child: new Text(
+                                        widget.selectedEnojis[index].char,
+                                    style: TextStyle(fontSize: 18),
+                                  )));
+                            },
+                          ),
+                        )
+                      : Container(
+                          width: 0,
+                          height: 0,
+                        )
+                ],
+              ),
+            ),
+            Positioned(
+                top: 70,
+                child: Container(
+                  color: Colors.grey,
+                  height: 0.5,
+                  width: MediaQuery.of(context).size.width,
+                )),
+            Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                height: 70,
+                // width: MediaQuery.of(context).size.height,
+                color: Colors.white,
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  child: Stack(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                            padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                            child: InkWell(onTap: (){
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //       builder: (context) => SimpleGrpView(room: widget.room,socket: widget.socket,
+                              //         auth: widget.auth,
+                              //         selfId: widget.auth.currentUser.uid,
+                              //         fndId: widget.chatBody["sender"] != null
+                              //             ? (widget.chatBody["sender"] ==
+                              //             widget.auth.currentUser.uid
+                              //             ? widget.chatBody["receiver"]
+                              //             : widget.chatBody["sender"])
+                              //             : widget.chatBody["uid"],
+                              //       )),
+                              // );
+                            },
+                              child: Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(8, 8, 15, 8),
+                                    child: Icon(Icons.supervised_user_circle),
+                                  ),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(widget.grpInfo["body"]["name"]!=null?widget.grpInfo["body"]["name"]:"No Name",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                            fontSize: 20),
+                                      ),
+                                      getUsersCount(widget.grpInfo["body"]["users"]),
+
+                                      // getListOfPeople(
+                                      //     widget.documentSnapshot.data()["users"]),
+                                      // Text(groupChatSnaps.data.docs[index].data()["users"].length.toString()+" users"),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            )),
                       ),
+                      Align(alignment: Alignment.centerRight,
+                        child: InkWell(onTap: (){
+                          // show all users and seaech and add to group
+                          //addtogrp
+
+                          done(List list) {
+                            print("returned " + list.length.toString());
+                            Navigator.pop(context);
+                            List ids = [];
+                            ids.add(widget.auth.currentUser.uid);
+                            String ii="";
+                            for (int i = 0; i < list.length; i++) {
+                              //  ids.add(list[i]["uid"]);
+                              ii = ii+list[i]["uid"];
+                            }
+
+                            http
+                                .post(
+                                Uri.parse(AppSettings().Api_link + 'addMember'),
+                                headers: <String, String>{
+                                  'Content-Type':
+                                  'application/json; charset=UTF-8',
+                                },
+                                body: jsonEncode(<String, String>{
+                                  //"admin": widget.auth.currentUser.uid,
+                                  "grp":widget. grpInfo["id"],
+                                  "peoples":ii
+                                }))
+                                .then((value) {
+                                  print(value.body);
+                             // Navigator.pop(context);
+                            });
+
+                          }
+
+                     Widget addParticipents =   ParticipentChooseForGrp(
+                            auth: widget.auth,
+                            callback: done,
+                          );
+
+                     AlertDialog alert = AlertDialog(
+                       // title: Text("Add New"),
+                       content: Container(width: MediaQuery.of(context).size.width>1000?400:MediaQuery.of(context).size.width,height: 400,
+                         child:addParticipents,
+                       ),
+
+                     );
+                     showDialog(
+                       context: context,
+                       builder: (BuildContext context) {
+                         return alert;
+                       },
+                     );
+
+
+
+                        },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Icon(Icons.person_add),
+                          ),
+                        ),
+                      )
                     ],
                   ),
                 ),
-                widget.showEmojiList
-                    ? Container(
-                        height: 300,
-                        color: Colors.white,
-                        // width: 500,
-                        child: GridView.builder(
-                          itemCount:widget.selectedEnojis.length,
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: MediaQuery.of(context).size.width>700?20:8),
-                          itemBuilder: (BuildContext context, int index) {
-                            return InkWell(
-                                onTap: () {
-                                  controllerGrp.text = controllerGrp.text +
-                                      widget.selectedEnojis[index].char;
-                                },
-                                child: Center(
-                                    child: new Text(
-                                      widget.selectedEnojis[index].char,
-                                  style: TextStyle(fontSize: 18),
-                                )));
-                          },
-                        ),
-                      )
-                    : Container(
-                        width: 0,
-                        height: 0,
-                      )
-              ],
-            ),
-          ),
-          Positioned(
-              top: 70,
-              child: Container(
-                color: Colors.grey,
-                height: 0.5,
-                width: MediaQuery.of(context).size.width,
-              )),
-          Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              height: 70,
-              // width: MediaQuery.of(context).size.height,
-              color: Colors.white,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                child: Stack(
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                          padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(8, 8, 15, 8),
-                                child: Icon(Icons.supervised_user_circle),
-                              ),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(widget.grpInfo["body"]["name"]!=null?widget.grpInfo["body"]["name"]:"No Name",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                        fontSize: 20),
-                                  ),
-                                  getUsersCount(widget.grpInfo["body"]["users"]),
-
-                                  // getListOfPeople(
-                                  //     widget.documentSnapshot.data()["users"]),
-                                  // Text(groupChatSnaps.data.docs[index].data()["users"].length.toString()+" users"),
-                                ],
-                              ),
-                            ],
-                          )),
-                    ),
-                    Align(alignment: Alignment.centerRight,
-                      child: InkWell(onTap: (){
-                        // show all users and seaech and add to group
-                        //addtogrp
-
-                        done(List list) {
-                          print("returned " + list.length.toString());
-                          Navigator.pop(context);
-                          List ids = [];
-                          ids.add(widget.auth.currentUser.uid);
-                          String ii="";
-                          for (int i = 0; i < list.length; i++) {
-                            //  ids.add(list[i]["uid"]);
-                            ii = ii+list[i]["uid"];
-                          }
-
-                          http
-                              .post(
-                              Uri.parse(AppSettings().Api_link + 'addMember'),
-                              headers: <String, String>{
-                                'Content-Type':
-                                'application/json; charset=UTF-8',
-                              },
-                              body: jsonEncode(<String, String>{
-                                //"admin": widget.auth.currentUser.uid,
-                                "grp":widget. grpInfo["id"],
-                                "peoples":ii
-                              }))
-                              .then((value) {
-                                print(value.body);
-                           // Navigator.pop(context);
-                          });
-
-                        }
-
-                   Widget addParticipents =   ParticipentChooseForGrp(
-                          auth: widget.auth,
-                          callback: done,
-                        );
-
-                   AlertDialog alert = AlertDialog(
-                     // title: Text("Add New"),
-                     content: Container(width: MediaQuery.of(context).size.width>1000?400:MediaQuery.of(context).size.width,height: 400,
-                       child:addParticipents,
-                     ),
-
-                   );
-                   showDialog(
-                     context: context,
-                     builder: (BuildContext context) {
-                       return alert;
-                     },
-                   );
-
-
-
-                      },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Icon(Icons.person_add),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -3414,42 +3517,52 @@ class _GroupChatThreadState extends State<GroupChatThread> {
     List<Widget> allWidg = [];
     String users = grpInfo.toString();
     List all  = users.split(",");
-    return Text(all.length.toString()+" users");
+  //  return Text(all.length.toString()+" users");
     Future getData(String uid) async {
       String id = uid;
       var url = Uri.parse(AppSettings().Api_link+'getUserDetail?id=' + id);
       var response = await http.get(url);
+      print(response.body);
       return jsonDecode(response.body);
     }
-    for(int i = 0 ; i <all.length ; i ++  ){
-      allWidg.add(Padding(
-        padding: const EdgeInsets.all(1.0),
-        child: Text(all[i].toString()),
-      ));
-    }
-    for(int i = 0 ; i <all.length ; i ++  ){
-      allWidg.add(Padding(padding: EdgeInsets.all(1),child:  FutureBuilder<dynamic>(
+    // for(int i = 0 ; i <all.length ; i ++  ){
+    //   allWidg.add(Padding(
+    //     padding: const EdgeInsets.all(1.0),
+    //    // child: Text(all[i].toString()),
+    //   ));
+    // }
+    for(int i = 0 ; i <1 ; i ++  ){allWidg.add(FetchUserNameWidget(
+        uid: all[i]),);
+    /*  allWidg.add(Padding(padding: EdgeInsets.all(1),child:  FutureBuilder<dynamic>(
           future: getData(all[i]),
           builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
             if (snapshot.hasData && snapshot.data != null) {
+
               print(snapshot.data.toString());
               return Text(snapshot.data["name"]);
+              // allWidg.add(Padding(
+              //   padding: const EdgeInsets.all(1.0),
+              //   child: Text(snapshot.data["name"]),
+              // ));
+             // return Text(snapshot.data["name"]);
+            //  return Text(snapshot.data["name"]);
 
 
             }else{
               return Text("Name not found");
             }
           }),
+    */
 
 
 
-      ));
+     // ));
     }
 
 
 
     //  return Text( data.toString());
-    return Wrap(children: allWidg,);
+    return Row(children: allWidg,);
     return ListView.builder(scrollDirection: Axis.horizontal,
       itemCount: allWidg.length,
       itemBuilder: (context, position) {
@@ -3972,6 +4085,9 @@ class _AudioTestAidState extends State<AudioTestAid> {
                       });
                     });
                   } else {
+                    //initA
+
+
                     audioPlayer.resume().then((value) {
                       setState(() {
                         widget.isPlaying = true;
@@ -4052,7 +4168,9 @@ class _AddFndWidgetState extends State<AddFndWidget> {
 
   @override
   Widget build(BuildContext context) {
-  //  return Text("");
+  //  return Text("");#
+
+
 
     return FutureBuilder(
         // Initialize FlutterFire:

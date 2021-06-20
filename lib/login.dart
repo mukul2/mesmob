@@ -112,160 +112,150 @@ class _LoginState extends State<Login> {
   }
 
  Widget loginForm() {
+   FocusNode textSecondFocusNode = new FocusNode();
+   FocusNode textFirstFocusNode = new FocusNode();
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: MediaQuery.of(context).size.width,
-            // height: 400,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 0, 00, 0),
-              child: Builder(builder: (BuildContext context) {
-                return Wrap(
-                  // mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Image.asset(
-                    //   "assets/stahtlogogreen.jpg",
-                    //   height: 100,
-                    // ),
-                    Container(
-                        height: 100,
-                        width: MediaQuery.of(context).size.width,
-                        child: Image.asset(
-                          "assets/maulaji_sqr.png",
-                          fit: BoxFit.cover,
-                        )),
-                    Container(
-                      child: Wrap(
-                        children: [
-                          Text("Read our"),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(3,0,3, 0),
-                            child: Text("Privacy Policy.",style: TextStyle(color:Colors.blue)),
-                          ),
-                          Text("Tap Agree and Continue to accept the"),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(3,0,3, 0),
-                            child: Text("Terms of Service",style: TextStyle(color:Colors.blue),),
-                          ),
-                        ],
-                      ),
-                    ),
-                    TextFormField(
+              height: 100,
+              width: MediaQuery.of(context).size.width,
+              child: Image.asset(
+                "assets/maulaji_sqr.png",
+                fit: BoxFit.cover,
+              )),
+          Container(
+            child: Wrap(
+              children: [
+                Text("Read our"),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(3,0,3, 0),
+                  child: Text("Privacy Policy.",style: TextStyle(color:Colors.blue)),
+                ),
+                Text("Tap Agree and Continue to accept the"),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(3,0,3, 0),
+                  child: Text("Terms of Service",style: TextStyle(color:Colors.blue),),
+                ),
+              ],
+            ),
+          ),
+          TextFormField(
+            // focusNode: textFirstFocusNode,
+            textAlign: TextAlign.left,
+            autofocus: true,
+
+            decoration:
+            const InputDecoration(hintText: "Email"),
+            controller: _emailController,
+            onEditingComplete: () => FocusScope.of(context).nextFocus(),
+            // onEditingComplete: (String value) {
+            //   FocusScope.of(context).requestFocus(textSecondFocusNode);
+            // },
+          ),
+
+
+          Container(height:50 ,width: MediaQuery.of(context).size.width,
+            child: Stack(
+              children: [
+
+
+                Positioned(
+                  left: 0,
+                  right: 0,
+
+                  child: Container(
+                    child: TextFormField(
+                     // focusNode: textSecondFocusNode,
+                      validator: (value) => validatePassword(value),
                       textAlign: TextAlign.left,
-
-                      decoration:
-                      const InputDecoration(hintText: "Email"),
-                      controller: _emailController,
+                      obscureText: hidePass,
+                      decoration: const InputDecoration(hintText: "Password"),
+                      controller: _passwordController,
                     ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(width: 50,height: 50,
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          hidePass = ! hidePass;
+                        });
 
-
-                    Container(height:50 ,width: MediaQuery.of(context).size.width,
-                      child: Stack(
-                        children: [
-
-
-                          Positioned(
-                            left: 0,
-                            right: 0,
-
-                            child: Container(
-                              child: TextFormField(
-                                validator: (value) => validatePassword(value),
-                                textAlign: TextAlign.left,
-                                obscureText: hidePass,
-                                decoration:
-                                const InputDecoration(hintText: "Password"),
-                                controller: _passwordController,
-                              ),
-                            ),
-                          ),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Container(width: 50,height: 50,
-                              child: InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    hidePass = ! hidePass;
-                                  });
-
-                                },
-                                child: Center(child: Icon(Icons.remove_red_eye)),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      },
+                      child: Center(child: Icon(Icons.remove_red_eye)),
                     ),
+                  ),
+                ),
+              ],
+            ),
+          ),
 
 
 
 
 
 
-                    const SizedBox(
-                      height: 20,
+          const SizedBox(
+            height: 20,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+            child: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  CreateAccount(
+                                    auth: widget.auth,
+                                  )),
+                        );
+
+                        //CreateAccount
+                      },
+                      child: Text(
+                        "Create an Account with Email",
+                        style: TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold),
+                      )),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: RaisedButton(
+                    color: Theme.of(context).primaryColor,
+                    onPressed: () async {
+                      final String retVal =
+                      await Auth(auth: widget.auth)
+                          .signIn(
+                        email: _emailController.text,
+                        password: _passwordController.text,
+                      );
+                      if (retVal == "Success") {
+                        _emailController.clear();
+                        _passwordController.clear();
+                      } else {
+                        Scaffold.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(retVal)));
+                      }
+                    },
+                    child: const Text(
+                      "SIGN IN",
+                      style: TextStyle(color: Colors.white),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                      child: Stack(
-                        children: [
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            CreateAccount(
-                                              auth: widget.auth,
-                                            )),
-                                  );
-
-                                  //CreateAccount
-                                },
-                                child: Text(
-                                  "Create an Account with Email",
-                                  style: TextStyle(
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.bold),
-                                )),
-                          ),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: RaisedButton(
-                              color: Theme.of(context).primaryColor,
-                              onPressed: () async {
-                                final String retVal =
-                                await Auth(auth: widget.auth)
-                                    .signIn(
-                                  email: _emailController.text,
-                                  password: _passwordController.text,
-                                );
-                                if (retVal == "Success") {
-                                  _emailController.clear();
-                                  _passwordController.clear();
-                                } else {
-                                  Scaffold.of(context).showSnackBar(
-                                      SnackBar(
-                                          content: Text(retVal)));
-                                }
-                              },
-                              child: const Text(
-                                "SIGN IN",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              }),
+                  ),
+                )
+              ],
             ),
           ),
           Padding(

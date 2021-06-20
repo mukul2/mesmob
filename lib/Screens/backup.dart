@@ -30,7 +30,7 @@ Future<FirebaseApp> customInitialize() {
 
 var ownCandidateID = null;
 
-class SimpleWebCall extends StatefulWidget {
+class SimpleWebCallb extends StatefulWidget {
   List streams = [];
   bool showAllFriends = false;
 
@@ -94,7 +94,7 @@ class SimpleWebCall extends StatefulWidget {
     // });
   }
 
-  SimpleWebCall(
+  SimpleWebCallb(
       {this.partnerPair,
         this.ownID,
         this.partnerid,
@@ -112,10 +112,11 @@ class SimpleWebCall extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<SimpleWebCall>
+class _MyHomePageState extends State<SimpleWebCallb>
     with WidgetsBindingObserver {
-  Timer timer;
+  //String get sdpSemantics => WebRTC.platformIsWindows ? 'plan-b' : 'unified-plan';
   String get sdpSemantics => kIsWeb ? "plan-b" : "unified-plan";
+  Timer timer;
   bool _offer = false;
   RTCPeerConnection pc;
   MediaStream _localStream;
@@ -135,17 +136,56 @@ class _MyHomePageState extends State<SimpleWebCall>
   final sdpController = TextEditingController();
   List<RTCVideoRenderer> remoteRenderList = [];
   AudioPlayer audioPlayer;
-
   playLocal() async {
-    // audioPlayer.resume();
+    if (true) {
+      if (widget.isRingTonePlaying == false) {
+        setState(() {
+          widget.isRingTonePlaying = true;
+        });
+        //   audioPlayer.seek(Duration(seconds: 0)).then((value) {});
+        //  audioPlayer.resume();
 
-    if (widget.isRingTonePlaying == false) {
-      setState(() {
-        widget.isRingTonePlaying = true;
-      });
-      audioPlayer.resume();
+        audioPlayer = await AudioPlayer();
+        if (kIsWeb) {
+          await audioPlayer.setUrl("assets/assets/passive.mp3", isLocal: true);
+          audioPlayer.play("assets/assets/passive.mp3",isLocal: true);
+        } else {
+          const kUrl1 = "assets/ring.mp3";
+          final bytes = await  rootBundle.load('assets/passive.mp3');
+          //final bytes = await rootBundle.load('assets/ring.mp3');
+          final dir = await getApplicationDocumentsDirectory();
+          final file = File('${dir.path}/passive.mp3');
+          await file.writeAsBytes(bytes.buffer
+              .asUint8List(bytes.offsetInBytes, bytes.lengthInBytes));
+          //   await file.writeAsBytes(bytes);
+
+          audioPlayer.play(file.path,isLocal: true);
+
+
+        }
+
+
+
+
+        // audioPlayer.onPlayerCompletion.listen((event) {
+        //   audioPlayer.seek(Duration(seconds: 0)).then((value) {
+        //     audioPlayer.resume();
+        //   });
+        //
+        // });
+      }
     }
   }
+  // playLocal() async {
+  //   // audioPlayer.resume();
+  //
+  //   if (widget.isRingTonePlaying == false) {
+  //     setState(() {
+  //       widget.isRingTonePlaying = true;
+  //     });
+  //     audioPlayer.resume();
+  //   }
+  // }
 
   StopRing() async {
     // audioPlayer.resume();
@@ -188,9 +228,6 @@ class _MyHomePageState extends State<SimpleWebCall>
 
   @override
   void initState() {
-    setState(() {
-      widget.  containsVideo = false ;
-    });
     initRenderers();
     initAudio();
     endCallListener();
@@ -236,18 +273,7 @@ class _MyHomePageState extends State<SimpleWebCall>
           widget.socket.on("accept" + widget.partnerid, (data) {
             print("accepted on other side");
 
-            _createPeerConnectionSignal().then((pc) {
-              pc = pc;
-
-              if (widget.isCaller == true) {
-                _createOfferSignal();
-                //listen for nego as caller
-
-                renegoForAnswer();
-              } else {
-                //lookForOfferSignal();
-              }
-            });
+            workAsCaller();
           });
         } catch (e) {
           print(e.toString());
@@ -279,19 +305,7 @@ class _MyHomePageState extends State<SimpleWebCall>
         } catch (e) {}
       } else {
         print("receiver here ");
-
-        _createPeerConnectionSignal().then((pc) {
-          pc = pc;
-
-          if (widget.isCaller == true) {
-          } else {
-            lookForOfferSignal();
-            if (widget.isCaller == false) {
-              widget.socket.emit("accept", {"id": widget.ownID});
-            }
-            renegoForOffer();
-          }
-        });
+        workNowasRec();
       }
     } catch (e) {}
   }
@@ -351,7 +365,7 @@ class _MyHomePageState extends State<SimpleWebCall>
     // print("writing my own des end of ");
   }
 
-  _createPeerConnectionSignal() async {
+  Future<RTCPeerConnection> _createPeerConnectionSignal() async {
     print("going to create peer");
     // Map<String, dynamic> configuration = {
     //   "iceServers": [
@@ -405,7 +419,8 @@ class _MyHomePageState extends State<SimpleWebCall>
           'username': 'administrator'
         }
       ],
-      "sdpSemantics": kIsWeb ? "plan-b" : "unified-plan"
+      //   "sdpSemantics": kIsWeb ? "plan-b" : "unified-plan"
+      "sdpSemantics":sdpSemantics
     };
     Map<String, dynamic> configuration33 = {
       'iceServers': [
@@ -459,15 +474,11 @@ class _MyHomePageState extends State<SimpleWebCall>
           widget.appbart3 = "nego";
         });
 
-        for (int i = 0; i < 1; i++) {
-          Future.delayed(Duration(seconds: i), () {
-            if (widget.isCaller) {
-              // _createOfferNego(roomID);
-              MakeNewOfferNegoX();
-            } else {
-              MakeNewANswerNego();
-            }
-          });
+        if (widget.isCaller) {
+          // _createOfferNego(roomID);
+          MakeNewOfferNegoX();
+        } else {
+          MakeNewANswerNego();
         }
 
         setState(() {
@@ -501,21 +512,9 @@ class _MyHomePageState extends State<SimpleWebCall>
       // await  pc.addStream(_localStream.);
 
     } else {
-      _primaryStreem.getTracks().forEach((track) async {
-       await  pc.addTrack(track, _primaryStreem);
-
-
+      _primaryStreem.getTracks().forEach((track) {
+        pc.addTrack(track, _primaryStreem);
       });
-
-      // if( widget.containsVideo == false){
-      //   for (int i = 0;
-      //   i < _primaryStreem.getVideoTracks().length;
-      //   i++) {
-      //     //_localStream.getVideoTracks()[i].(widget.isCameraOn);
-      //     _primaryStreem.getVideoTracks()[i].enabled =false;
-      //   }
-      // }
-
     }
 
     pc.onRemoveStream = (e) async {
@@ -606,8 +605,8 @@ class _MyHomePageState extends State<SimpleWebCall>
           //  widget.appbart = "connected";
         });
       }
-
-      // if (false && widget.didOpositConnected = true) {
+      //
+      // if (widget.didOpositConnected = true) {
       //   if (pc.iceConnectionState ==
       //       RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
       //     pc.close().then((value) {
@@ -621,7 +620,9 @@ class _MyHomePageState extends State<SimpleWebCall>
       if (pc.iceConnectionState == 'disconnected') {}
     };
     pc.onAddStream = (stream) async {
-      print("new stream " + stream.id);
+      print("new stream mkl" + stream.id);
+
+
     };
 
     switch (sdpSemantics) {
@@ -639,9 +640,9 @@ class _MyHomePageState extends State<SimpleWebCall>
           //   _remoteRendererAudio.srcObject = stream;
           // }
 
-          if (_remoteRenderer.srcObject == null) {
+          if (_remoteRendererAudio.srcObject == null) {
             setState(() {
-              _remoteRenderer.srcObject = stream;
+              _remoteRendererAudio.srcObject = stream;
             });
           } else
             setState(() {
@@ -653,22 +654,6 @@ class _MyHomePageState extends State<SimpleWebCall>
         break;
       case 'unified-plan':
         pc.onTrack = (event) {
-        //  _remoteRenderer.srcObject = event.streams[0];
-// event.track.kind == 'video'
-          if (true ) {
-            print('New stream: ' + event.streams[0].id);
-           // _remoteRendererAudio.srcObject = event.streams[0];
-            _remoteRenderer.srcObject = event.streams[0];
-          }
-
-          // if(false && widget.containsVideo == false){
-          //   for (int i = 0;
-          //   i < _primaryStreem.getVideoTracks().length;
-          //   i++) {
-          //     //_localStream.getVideoTracks()[i].(widget.isCameraOn);
-          //     _primaryStreem.getVideoTracks()[i].enabled =false;
-          //   }
-          // }
 
           // if (event.track.kind == 'video' && event.streams.isNotEmpty) {
           //   print('New stream: ' + event.streams[0].id);
@@ -678,7 +663,7 @@ class _MyHomePageState extends State<SimpleWebCall>
 
 
 //event.track.kind == 'video' && event.streams.isNotEmpty
-          if (false ) {
+          if (true ) {
             _remoteRenderer.srcObject = event.streams.first;
             event.streams.first.getTracks().forEach((track) {
               if (_remoteRendererAudio.srcObject == null) {
@@ -695,6 +680,8 @@ class _MyHomePageState extends State<SimpleWebCall>
         };
         break;
     }
+
+
     if (false) {
       if (kIsWeb) {
         // running on the web!
@@ -752,8 +739,19 @@ class _MyHomePageState extends State<SimpleWebCall>
           // });
         };
       } else {
+
+
         pc.onTrack = (event) {
-          if (true || event.track.kind == 'video') {
+
+          // if (event.track.kind == 'video' && event.streams.isNotEmpty) {
+          //   print('New stream: ' + event.streams[0].id);
+          //   _remoteRenderer.srcObject = event.streams[0];
+          // }
+
+
+
+//event.track.kind == 'video' && event.streams.isNotEmpty
+          if (true ) {
             _remoteRenderer.srcObject = event.streams.first;
             event.streams.first.getTracks().forEach((track) {
               if (_remoteRendererAudio.srcObject == null) {
@@ -816,16 +814,7 @@ class _MyHomePageState extends State<SimpleWebCall>
   _getUserMedia() async {
     final Map<String, dynamic> mediaConstraints = {
       'audio': true,
-      'video': {
-        'mandatory': {
-          'minWidth':
-          '640', // Provide your own width, height and frame rate here
-          'minHeight': '480',
-          'minFrameRate': '30',
-        },
-        'facingMode': 'user',
-        'optional': [],
-      }
+      'video': false
     };
 
     MediaStream stream =
@@ -870,10 +859,6 @@ class _MyHomePageState extends State<SimpleWebCall>
       ]));
 
   Widget screenView() {
-    // return RTCVideoView(
-    //   _remoteRenderer,
-    //   objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-    // );
     return Center(
       child: Container(
         color: Color.fromARGB(255, 23, 32, 42),
@@ -884,26 +869,26 @@ class _MyHomePageState extends State<SimpleWebCall>
             Align(
                 alignment: Alignment.center,
                 child: new RTCVideoView(
-                  _remoteRenderer,
+                  _remoteRendererAudio,
                   objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                 )),
-            // Align(
-            //     alignment: Alignment.bottomCenter,
-            //     child: widget.anyRemoteVideoStrem == true
-            //         ? new RTCVideoView(
-            //       _remoteRenderer,
-            //       objectFit:
-            //       RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-            //     )
-            //         : Center(
-            //       child: Text(
-            //         widget.partnerName,
-            //         style: TextStyle(
-            //             fontWeight: FontWeight.bold,
-            //             color: Colors.white,
-            //             fontSize: 50),
-            //       ),
-            //     )),
+            Align(
+                alignment: Alignment.bottomCenter,
+                child: widget.anyRemoteVideoStrem == true
+                    ? new RTCVideoView(
+                  _remoteRenderer,
+                  objectFit:
+                  RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                )
+                    : Center(
+                  child: Text(
+                    widget.partnerName,
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 50),
+                  ),
+                )),
             Align(
               alignment: Alignment.bottomCenter,
               child: Container(
@@ -951,6 +936,7 @@ class _MyHomePageState extends State<SimpleWebCall>
                                     ? Padding(
                                   padding: const EdgeInsets.all(4.0),
                                   child: FloatingActionButton(
+                                    heroTag: "5",
                                     onPressed: handelScreenShaing,
 
                                     //  color: Colors.white,
@@ -971,12 +957,13 @@ class _MyHomePageState extends State<SimpleWebCall>
                                 Padding(
                                   padding: const EdgeInsets.all(4.0),
                                   child: FloatingActionButton(
+                                    heroTag: "4",
                                     onPressed: (){
                                       for (int i = 0;
-                                      i < _remoteRenderer.srcObject.getAudioTracks().length; i++) {
+                                      i < _remoteRendererAudio.srcObject.getAudioTracks().length; i++) {
                                         //_localStream.getVideoTracks()[i].(widget.isCameraOn);
-                                        _remoteRenderer.srcObject.getAudioTracks()[i].enabled =
-                                        !(_remoteRenderer.srcObject.getAudioTracks()[i].enabled);
+                                        _remoteRendererAudio.srcObject.getAudioTracks()[i].enabled =
+                                        !(_remoteRendererAudio.srcObject.getAudioTracks()[i].enabled);
                                       }
                                       setState(() {
                                         widget.isPartNerAudioMuted = !widget.isPartNerAudioMuted;
@@ -994,6 +981,7 @@ class _MyHomePageState extends State<SimpleWebCall>
                                 Padding(
                                   padding: const EdgeInsets.all(4.0),
                                   child: FloatingActionButton(
+                                    heroTag: "3",
                                     onPressed: (){
                                       for (int i = 0;
                                       i < _primaryStreem.getAudioTracks().length;
@@ -1020,20 +1008,8 @@ class _MyHomePageState extends State<SimpleWebCall>
                                 Padding(
                                   padding: const EdgeInsets.all(4.0),
                                   child: FloatingActionButton(
-                                    onPressed: (){
-                                      for (int i = 0;
-                                      i < _primaryStreem.getVideoTracks().length;
-                                      i++) {
-                                        //_localStream.getVideoTracks()[i].(widget.isCameraOn);
-                                        _primaryStreem.getVideoTracks()[i].enabled =
-                                        !(_primaryStreem
-                                            .getVideoTracks()[i]
-                                            .enabled);
-                                      }
-                                      setState(() {
-                                        widget.containsVideo = !widget.containsVideo;
-                                      });
-                                    },
+                                    heroTag: "2",
+                                    onPressed: handleCameraToggle,
                                     backgroundColor: Colors.redAccent,
                                     child: Icon(
                                       !widget.containsVideo
@@ -1046,6 +1022,7 @@ class _MyHomePageState extends State<SimpleWebCall>
                                 Padding(
                                   padding: const EdgeInsets.all(4.0),
                                   child: FloatingActionButton(
+                                    heroTag: "1",
                                     onPressed: () {
                                       StopRing();
                                       endCall();
@@ -1352,7 +1329,7 @@ class _MyHomePageState extends State<SimpleWebCall>
     RTCSessionDescription descriptionLocal = await pc
         .createAnswer({'offerToReceiveVideo': 1, 'offerToReceiveAudio': 1});
     try {
-      await pc.setLocalDescription(descriptionLocal);
+      // await pc.setLocalDescription(descriptionLocal);
     } catch (e) {
       print("here is an exceptions");
       print(e.toString());
@@ -1365,16 +1342,16 @@ class _MyHomePageState extends State<SimpleWebCall>
       }
     });
 
-    widget.socket.on("offerNasResponse" + widget.ownID,
-            (data) async {
-          print(data);
-
-          dynamic ss = data;
-          print("found offer");
-          RTCSessionDescription description =
-          new RTCSessionDescription(ss["sdp"], ss["type"]);
-          await pc.setRemoteDescription(description);
-        });
+    // widget.socket.on("offerNasResponse" + widget.ownID,
+    //         (data) async {
+    //       print(data);
+    //
+    //       dynamic ss = data;
+    //       print("found offer");
+    //       RTCSessionDescription description =
+    //       new RTCSessionDescription(ss["sdp"], ss["type"]);
+    //       await pc.setRemoteDescription(description);
+    //     });
   }
 
   void MakeNewOfferNegoX() async {
@@ -1391,21 +1368,21 @@ class _MyHomePageState extends State<SimpleWebCall>
       }
     });
 
-    try {
-      widget.socket.on("answerNasResponse" + widget.ownID,
-              (data) async {
-            dynamic ss = data;
-
-            RTCSessionDescription description =
-            new RTCSessionDescription(ss["sdp"], ss["type"]);
-            try {
-              //  await pc.setRemoteDescription(description);
-            } catch (e) {
-              print("own excepriom");
-              print(e.toString());
-            }
-          });
-    } catch (e) {}
+    // try {
+    //   widget.socket.on("answerNasResponse" + widget.ownID,
+    //           (data) async {
+    //         dynamic ss = data;
+    //
+    //         RTCSessionDescription description =
+    //         new RTCSessionDescription(ss["sdp"], ss["type"]);
+    //         try {
+    //           //  await pc.setRemoteDescription(description);
+    //         } catch (e) {
+    //           print("own excepriom");
+    //           print(e.toString());
+    //         }
+    //       });
+    // } catch (e) {}
   }
 
   void handelScreenShaing() async {
@@ -1434,19 +1411,19 @@ class _MyHomePageState extends State<SimpleWebCall>
           });
           widget.isCameraShowing = false;
         }
-        for (int i = 0; i < 2; i++) {
-          if (kIsWeb) {
-            pc.addStream(_localStreamScreenShare).then((value) {
-              setState(() {
-                _localRenderer.srcObject = _localStreamScreenShare;
-              });
+
+        if (kIsWeb) {
+          pc.addStream(_localStreamScreenShare).then((value) {
+            setState(() {
+              _localRenderer.srcObject = _localStreamScreenShare;
             });
-          } else {
-            _localStreamScreenShare.getTracks().forEach((track) {
-              pc.addTrack(track, _localStreamScreenShare);
-            });
-          }
+          });
+        } else {
+          _localStreamScreenShare.getTracks().forEach((track) {
+            pc.addTrack(track, _localStreamScreenShare);
+          });
         }
+
 
         widget.isScreenSharing = true;
       });
@@ -1461,10 +1438,11 @@ class _MyHomePageState extends State<SimpleWebCall>
       });
     }
   }
+
   void handleCameraToggle() async {
 
     setState(() {
-     // widget.  containsVideo = false ;
+      widget.  containsVideo = false ;
       widget.containsVideo = !widget.containsVideo;
     });
     //   widget.isCameraShowing == false && widget.containsVideo == false && _localStreamVideo == null
@@ -1487,12 +1465,12 @@ class _MyHomePageState extends State<SimpleWebCall>
       setState(() {
         _localStreamVideo = newStream;
         if (widget.isScreenSharing == true) {
-          // pc.removeStream(_localStreamScreenShare).then((value) {
-          //   widget.isScreenSharing = false;
-          //   setState(() {
-          //     _localRenderer.srcObject = null;
-          //   });
-          // });
+          pc.removeStream(_localStreamScreenShare).then((value) {
+            widget.isScreenSharing = false;
+            setState(() {
+              _localRenderer.srcObject = null;
+            });
+          });
         }
         void _onTrack(RTCTrackEvent event) {
           print('onTrack');
@@ -1505,14 +1483,8 @@ class _MyHomePageState extends State<SimpleWebCall>
           case 'unified-plan':
             pc.onTrack = _onTrack;
             newStream.getTracks().forEach((track) {
-
-
-
               pc.addTrack(track, newStream);
             });
-            if(widget.containsVideo == false){
-              //disable camera
-            }
             break;
         }
 
@@ -1565,81 +1537,6 @@ class _MyHomePageState extends State<SimpleWebCall>
         }
 
 
-      }
-    }
-  }
-  void handleCameraToggle2() async {
-    setState(() {
-      widget.containsVideo = !widget.containsVideo;
-    });
-    if (widget.isCameraShowing == false &&
-        widget.containsVideo == true &&
-        _localStreamVideo == null) {
-      final Map<String, dynamic> mediaConstraintsScreen = {
-        'audio': false,
-
-        'video': {
-          'mandatory': {
-            'minWidth':
-            '640', // Provide your own width, height and frame rate here
-            'minHeight': '480',
-            'minFrameRate': '15',
-          },
-          'facingMode': 'user',
-          'optional': [],
-        }
-      };
-      MediaStream newStream =
-      await navigator.mediaDevices.getUserMedia(mediaConstraintsScreen);
-      setState(() {
-        _localStreamVideo = newStream;
-        if (widget.isScreenSharing == true) {
-          pc.removeStream(_localStreamScreenShare).then((value) {
-            widget.isScreenSharing = false;
-            setState(() {
-              _localRenderer.srcObject = null;
-            });
-          });
-        }
-
-        for (int i = 0; i < 2; i++) {
-          if (kIsWeb) {
-            pc.addStream(_localStreamVideo).then((value) {
-              setState(() {
-                _localRenderer.srcObject = _localStreamVideo;
-              });
-            });
-          } else {
-            _localStreamVideo.getTracks().forEach((track) {
-              pc.addTrack(track, _localStreamVideo);
-            });
-          }
-        }
-        widget.isCameraShowing = true;
-      });
-    } else {
-      if (kIsWeb) {
-        setState(() {
-          pc.removeStream(_localStreamVideo).then((value) {
-            setState(() {
-              _localRenderer.srcObject = null;
-            });
-          });
-          setState(() {
-            widget.isCameraShowing = false;
-            _localStreamVideo = null;
-          });
-        });
-      } else {
-        setState(() async {
-          _localStreamVideo.getTracks().forEach((track) {
-            track.stop();
-          });
-        });
-        setState(() {
-          widget.isCameraShowing = false;
-          _localStreamVideo = null;
-        });
       }
     }
   }
@@ -1735,13 +1632,18 @@ class _MyHomePageState extends State<SimpleWebCall>
   }
 
   void startCallStartedCount() {
-    StopRing();
-    setState(() {
-      widget.hasCountDownStartedOnce = true;
-      widget.didOpositConnected = true;
-    });
+    if (mounted) {
+      StopRing();
 
-    widget.callStartedNotify();
+      setState(() {
+        widget.hasCountDownStartedOnce = true;
+        widget.didOpositConnected = true;
+      });
+
+      widget.callStartedNotify();
+    }
+
+
     Timer.periodic(Duration(milliseconds: 1000), (timer) {
       if (mounted) {
         setState(() {
@@ -1766,6 +1668,8 @@ class _MyHomePageState extends State<SimpleWebCall>
         timer.cancel();
       }
     });
+
+
   }
 
   void endCallListener() {
@@ -1784,7 +1688,7 @@ class _MyHomePageState extends State<SimpleWebCall>
     //widget.socket.emit("callCanceled",{"id":widget.ownID});
   }
 
-  void renegoForOffer() {
+  void renegoForOffer(RTCPeerConnection peerConnectionX) {
     //im the receiver, only take offer and give answer
 
     widget.socket.on("offerNneedAnswer" + widget.ownID,
@@ -1794,59 +1698,76 @@ class _MyHomePageState extends State<SimpleWebCall>
           dynamic ss = data;
           print("found offer");
           lastOffer = data;
-          RTCSessionDescription description =
-          new RTCSessionDescription(ss["sdp"], ss["type"]);
-          await pc.setRemoteDescription(description);
+          RTCSessionDescription description = new RTCSessionDescription(ss["sdp"], ss["type"]);
+          if(description.type == "offer"){
 
-          RTCSessionDescription descriptionLocal = await pc
-              .createAnswer({'offerToReceiveVideo': 1, 'offerToReceiveAudio': 1});
-          try {
-            print(descriptionLocal.type);
-            if (descriptionLocal.type == "anwser") {
-              await pc.setLocalDescription(descriptionLocal);
-            } else {
-              print("stopped because it was not an anwwer");
+
+
+            await pc.setRemoteDescription(description);
+
+            RTCSessionDescription descriptionLocal = await pc.createAnswer({'offerToReceiveVideo': 1, 'offerToReceiveAudio': 1});
+            try {
+              print(descriptionLocal.type);
+              if (descriptionLocal.type == "answer") {
+                await pc.setLocalDescription(descriptionLocal);
+              } else {
+                print("stopped because it was not an anwwer 1");
+              }
+            } catch (e) {
+              print("my exception 3");
+              print(e.toString());
             }
-          } catch (e) {
-            print("my exception");
-            print(e.toString());
+
+            widget.socket.emit("answerNasResponse", {
+              "id": widget.partnerid,
+              "answer": {
+                "type": descriptionLocal.type,
+                "sdp": descriptionLocal.sdp,
+              }
+            });
+
+
+
+            widget.socket.on("offerNasResponse" + widget.ownID,
+                    (data) async {
+                  // print(data);
+                  print("nego offer found");
+                  dynamic ss = data;
+                  lastOffer = data;
+                  print("found offer");
+                  RTCSessionDescription description =
+                  new RTCSessionDescription(ss["sdp"], ss["type"]);
+                  await pc.setRemoteDescription(description);
+
+                  //now work here
+
+
+                  RTCSessionDescription descriptionLocal = await pc
+                      .createAnswer({'offerToReceiveVideo': 1, 'offerToReceiveAudio': 1});
+                  await pc.setLocalDescription(descriptionLocal);
+
+                  // RTCSessionDescription descriptionLastOffer = new RTCSessionDescription(lastOffer["sdp"], lastOffer["type"]);
+                  //
+                  // try {
+                  //   print(descriptionLastOffer.type);
+                  //   if (descriptionLastOffer.type == "offer" ) {
+                  //     //
+                  //     await pc.setLocalDescription(descriptionLastOffer);
+                  //   } else {
+                  //     print("stopped because it was not an anwwer");
+                  //   }
+                  // } catch (e) {
+                  //   print("my exception 4");
+                  //   print(e.toString());
+                  // }
+                });
+
+
+
           }
-
-          widget.socket.emit("answerNasResponse", {
-            "id": widget.partnerid,
-            "answer": {
-              "type": descriptionLocal.type,
-              "sdp": descriptionLocal.sdp,
-            }
-          });
         });
 
-    widget.socket.on("offerNasResponse" + widget.ownID,
-            (data) async {
-          // print(data);
-          print("nego offer found");
-          dynamic ss = data;
-          lastOffer = data;
-          print("found offer");
-          RTCSessionDescription description =
-          new RTCSessionDescription(ss["sdp"], ss["type"]);
-          await pc.setRemoteDescription(description);
 
-          RTCSessionDescription descriptionLastOffer =
-          new RTCSessionDescription(lastOffer["sdp"], lastOffer["type"]);
-
-          try {
-            print(descriptionLastOffer.type);
-            if (descriptionLastOffer.type == "anwser") {
-              await pc.setLocalDescription(descriptionLastOffer);
-            } else {
-              print("stopped because it was not an anwwer");
-            }
-          } catch (e) {
-            print("my exception");
-            print(e.toString());
-          }
-        });
 
     // try{
     //   widget.socket.on("offerN"+widget.ownID, (data) async{
@@ -1871,7 +1792,7 @@ class _MyHomePageState extends State<SimpleWebCall>
     // }
   }
 
-  void renegoForAnswer() {
+  void renegoForAnswer(RTCPeerConnection peerConnectionX) {
     //im am caller, i always do offer and receive answer
 
     widget.socket.on("answerNeedOffer" + widget.ownID, (data) async {
@@ -1885,7 +1806,7 @@ class _MyHomePageState extends State<SimpleWebCall>
       try {
         await pc.setRemoteDescription(description);
       } catch (e) {
-        print("my exception");
+        print("my exception 1");
         print(e.toString());
       }
       lastOffer = description;
@@ -1903,13 +1824,11 @@ class _MyHomePageState extends State<SimpleWebCall>
             (data) async {
           lastAnswer = data;
           dynamic ss = data;
-          if (false &&
-              lastOffer != null &&
-              lastOffer["sdp"] != null &&
-              lastOffer["type"] != null) {
+          if (false) {
             RTCSessionDescription descriptionLastOffer =
-            new RTCSessionDescription(lastOffer["sdp"], lastOffer["type"]);
-            //tmp off //await pc.setLocalDescription(descriptionLastOffer);
+            new RTCSessionDescription(ss["sdp"], ss["type"]);
+            if(descriptionLastOffer.type == "answer")
+              await pc.setLocalDescription(descriptionLastOffer);
           }
 
           RTCSessionDescription description =
@@ -1918,7 +1837,7 @@ class _MyHomePageState extends State<SimpleWebCall>
           try {
             await pc.setRemoteDescription(description);
           } catch (e) {
-            print("my exception");
+            print("my exception 2");
             print(e.toString());
           }
 
@@ -1960,6 +1879,33 @@ class _MyHomePageState extends State<SimpleWebCall>
     // } catch (e) {
     //
     // }
+  }
+
+  void workNowasRec()async {
+
+    RTCPeerConnection rtcPeerConnection =await _createPeerConnectionSignal();
+    pc = rtcPeerConnection;
+    if (widget.isCaller == true) {
+    } else {
+      lookForOfferSignal();
+      if (widget.isCaller == false) {
+        widget.socket.emit("accept", {"id": widget.ownID});
+      }
+      renegoForOffer(rtcPeerConnection);
+    }
+  }
+
+  void workAsCaller() async{
+    RTCPeerConnection rtcPeerConnection = await _createPeerConnectionSignal();
+    pc = rtcPeerConnection;
+    if (widget.isCaller == true) {
+      _createOfferSignal();
+      //listen for nego as caller
+
+      renegoForAnswer(rtcPeerConnection);
+    } else {
+      //lookForOfferSignal();
+    }
   }
 }
 

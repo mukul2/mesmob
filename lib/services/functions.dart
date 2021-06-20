@@ -251,13 +251,13 @@ class CommonFunctions {
         builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data != null && snapshot.data["photo"]!=null &&snapshot.data["photo"].toString().length>0) {
             return Container(
-              height: 40,
-              width: 40,
+              height: 50,
+              width: 50,
               child: Stack(
                 children: [
                   Align(
                     alignment: Alignment.center,
-                    child: CircleAvatar( backgroundImage:NetworkImage(base+snapshot.data["photo"]),),
+                    child: CircleAvatar( radius: 30,backgroundImage:NetworkImage(base+snapshot.data["photo"]),),
 
                   ),
 
@@ -274,13 +274,13 @@ class CommonFunctions {
 
           } else {
             return Container(
-              height: 40,
-              width: 40,
+              height: 50,
+              width: 50,
               child: Stack(
                 children: [
                   Align(
                     alignment: Alignment.center,
-                    child: CircleAvatar( backgroundImage: AssetImage("assets/user_photo.jpg"),),
+                    child: CircleAvatar( radius: 30, backgroundImage: AssetImage("assets/user_photo.jpg"),),
 
                   ),
 
@@ -748,7 +748,7 @@ class CommonFunctions {
               builder: (context) =>WillPopScope(
                 onWillPop: () async => false,
                 child: SimpleWebCall(socket:socket ,
-                  containsVideo: false,
+                  containsVideo:callTYpe=="v" ?true:false,
                   ownID: ownid,
                   partnerid: partner,
                   isCaller: isCaller,

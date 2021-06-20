@@ -27,7 +27,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
-import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -167,789 +166,1067 @@ class _SectorOneState extends State<SectorOne> {
       });
     }
 
-    return Container(
-      width: widget.width,
-      child: Stack(
+    return Container(height: MediaQuery.of(context).size.height-20,
+      child: Column(
+        //shrinkWrap: true,
         children: [
-          Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              height: MediaQuery.of(context).size.height,
-              color: Color.fromARGB(255, 238, 246, 255),
-              child: Wrap(
-                //shrinkWrap: true,
-                children: [
-                  Container(
-                    height: 70,
-                    color: Color.fromARGB(255, 238, 246, 255),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
-                      child: Container(
-                        height: 50,
-                        child: Center(
-                          child: Stack(
-                            children: [
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      widget.showMiniProfile = true;
-                                    });
-                                  },
-                                  child: Center(
-                                    child: Row(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              0, 0, 10, 0),
-                                          // child: prePareUserPhoto(widget.auth,
-                                          //     widget.auth.currentUser.uid),
-                                          child: CommonFunctions(
-                                                  auth: widget.auth,
-                                                  onlineUser: onlineUser,
-                                                  busyUser: busyUser,
-                                                  awayUser: awayUser)
-                                              .prePareUserPhotoSelf(
-                                                  uid: widget
-                                                      .auth.currentUser.uid),
-
-                                          // child: CircleAvatar(radius: 18,backgroundImage: NetworkImage("https://images-na.ssl-images-amazon.com/images/I/71Y2Ov9rHaL._SL1500_.jpg",)),
-                                        ),
-                                        //getNameFromIdR
-                                        FetchUserNameWidget(
-                                          uid: widget.auth.currentUser.uid,
-                                        ),
-
-                                        // CommonFunctions(
-                                        //         firestore: widget.firestore,
-                                        //         auth: widget.auth,
-                                        //         onlineUser: onlineUser)
-                                        //     .getNameFromIdR(
-                                        //         style: false,
-                                        //         id: widget.auth.currentUser.uid)
-
-                                        //Text(widget.sharedPreferences.get("uphoto")),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: button,
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  widget.isSearchModeOn == false
-                      ? Column(
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                //pop up search box here
-                                SimpleDialog d =     SimpleDialog(
-                                  title: Text('Set backup account'),
-                                  children: [
-                                    SearchPeopleActivity(
-                                      auth: widget.auth,
-                                      clicked: searchItemClicked,
-                                      searchClosed: searchClosed,
-                                    )
-                                  ],
-                                );
-
-                                AlertDialog alert = AlertDialog(
-                                 // title: Text("Add New"),
-                                  content: Container(width: MediaQuery.of(context).size.width>1000?400:MediaQuery.of(context).size.width,height: 400,
-                                    child: SearchPeopleActivity(
-                                      auth: widget.auth,
-                                      clicked: searchItemClicked,
-                                      searchClosed: searchClosed,
-                                    ),
-                                  ),
-
-                                );
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return alert;
-                                  },
-                                );
-
-                                // showDialog<void>(context: context, builder: (context) =>  Container(width: 400,height: 400,
-                                //   child:d,
-                                // ));
-                                // showDialog<void>(context: context, builder: (context) =>  Container(width: 400,
-                                //   child: SearchPeopleActivity(
-                                //     auth: widget.auth,
-                                //     clicked: searchItemClicked,
-                                //     searchClosed: searchClosed,
-                                //   ),
-                                // ));
-                                // Navigator.push(
-                                //     context,
-                                //     MaterialPageRoute(
-                                //         builder: (context) =>
-                                //             SearchPeopleActivity(
-                                //               auth: widget.auth,
-                                //               clicked: searchItemClicked,
-                                //               searchClosed: searchClosed,
-                                //             )));
-
-                                // setState(() {
-                                //   widget.isSearchModeOn = true;
-                                // });
-                              },
-                              child: Stack(
-                                children: [
-                                  Align(
-                                    alignment: Alignment.center,
-                                    child: Padding(
-                                      padding:
-                                          EdgeInsets.fromLTRB(7, 10, 7, 10),
-                                      child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            border:
-                                                Border.all(color: Colors.grey),
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(
-                                                    3.0) //                 <--- border radius here
-                                                ),
-                                          ),
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(4.0),
-                                            child: Row(
-                                              children: [
-                                                Center(
-                                                    child: Icon(Icons.search)),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.fromLTRB(
-                                                          10, 0, 0, 0),
-                                                  child: Center(
-                                                      child: Text("Search")),
-                                                ),
-                                              ],
-                                            ),
-                                          )),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-                              child: Container(
-                                height: 50,
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                        child: InkWell(
-                                            onTap: () {
-                                              setState(() {
-                                                widget.selectedTabMenu = 0;
-                                              });
-                                            },
-                                            child: Column(
-                                              children: [
-                                                Icon(Icons.chat,
-                                                    color:
-                                                        widget.selectedTabMenu ==
-                                                                0
-                                                            ? Theme.of(context)
-                                                                .primaryColor
-                                                            : Colors.grey),
-                                                Center(
-                                                    child: Text(
-                                                  "Chat",
-                                                  style: TextStyle(
-                                                      color:
-                                                          widget.selectedTabMenu ==
-                                                                  0
-                                                              ? Theme.of(
-                                                                      context)
-                                                                  .primaryColor
-                                                              : Colors.grey),
-                                                )),
-                                              ],
-                                            ))),
-                                    Expanded(
-                                        child: InkWell(
-                                            onTap: () {
-                                              setState(() {
-                                                widget.selectedTabMenu = 1;
-                                              });
-                                            },
-                                            child: Column(
-                                              children: [
-                                                Icon(Icons.contacts,
-                                                    color:
-                                                        widget.selectedTabMenu ==
-                                                                1
-                                                            ? Theme.of(context)
-                                                                .primaryColor
-                                                            : Colors.grey),
-                                                Center(
-                                                    child: Text(
-                                                  "Contacts",
-                                                  style: TextStyle(
-                                                      color:
-                                                          widget.selectedTabMenu ==
-                                                                  1
-                                                              ? Theme.of(
-                                                                      context)
-                                                                  .primaryColor
-                                                              : Colors.grey),
-                                                )),
-                                              ],
-                                            ))),
-                                    Expanded(
-                                        child: InkWell(
-                                            onTap: () {
-                                              setState(() {
-                                                widget.selectedTabMenu = 2;
-                                              });
-                                            },
-                                            child: Column(
-                                              children: [
-                                                Icon(Icons.group,
-                                                    color:
-                                                        widget.selectedTabMenu ==
-                                                                2
-                                                            ? Theme.of(context)
-                                                                .primaryColor
-                                                            : Colors.grey),
-                                                Center(
-                                                    child: Text(
-                                                  "Group Chat",
-                                                  style: TextStyle(
-                                                      color:
-                                                          widget.selectedTabMenu ==
-                                                                  2
-                                                              ? Theme.of(
-                                                                      context)
-                                                                  .primaryColor
-                                                              : Colors.grey),
-                                                )),
-                                              ],
-                                            ))),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-                              child: Container(
-                                width: MediaQuery.of(context).size.width,
-                                height: 1,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            getSmallTab(widget.width, widget.isMobileView),
-                          ],
-                        )
-                      : Container(
-                          width: widget.isMobileView
-                              ? MediaQuery.of(context).size.width
-                              : 349,
-                          child: SearchPeopleActivity(
-                            auth: widget.auth,
-                            clicked: searchItemClicked,
-                            searchClosed: searchClosed,
-                          )),
-                ],
-              ),
-            ),
-          ),
-          widget.showMiniProfile
-              ? Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 60,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 15, 8, 15),
-                    child: Card(
-                      color: Colors.white,
-                      elevation: 8,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            height: 80,
-                            child: Stack(
-                              children: [
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Padding(
-                                    padding: EdgeInsets.all(10),
-                                    child: Image.asset(
-                                      "assets/talkapp.png",
-                                      height: 60,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        widget.showMiniProfile = false;
-                                      });
-                                    },
-                                    child: Padding(
-                                        padding: EdgeInsets.all(10),
-                                        child: Icon(Icons.close)),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                          // ListTile(
-                          //   title: Padding(
-                          //     padding: EdgeInsets.all(0),
-                          //     child: Image.asset(
-                          //       "assets/maulaji_sqr.png",
-                          //       height: 50,
-                          //       width: ,
-                          //       fit: BoxFit.cover,
-                          //     ),
-                          //   ),
-                          //   onTap: () {
-                          //     setState(() {
-                          //       widget.showMiniProfile = false;
-                          //     });
-                          //   },
-                          //   trailing: Icon(Icons.close),
-                          // ),
-                          Divider(),
-                          Center(
+          Container(
+            height: 70,
+            color: Color.fromARGB(255, 238, 246, 255),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+              child: Container(
+                height: 50,
+                child: Center(
+                  child: Stack(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              widget.showMiniProfile = true;
+                            });
+                          },
+                          child: Center(
                             child: Row(
                               children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(20, 0, 10, 0),
-                                  child: CommonFunctions(
-                                          auth: widget.auth,
-                                          onlineUser: onlineUser,
-                                          busyUser: busyUser,
-                                          awayUser: awayUser)
-                                      .prePareUserPhoto(
-                                          uid: widget.auth.currentUser.uid),
-                                  // child: prePareUserPhoto(widget.auth,
-                                  //     widget.auth.currentUser.uid)
+                                Container(width: 50,
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                        0, 0, 10, 0),
+                                    // child: prePareUserPhoto(widget.auth,
+                                    //     widget.auth.currentUser.uid),
+                                    child: CommonFunctions(
+                                        auth: widget.auth,
+                                        onlineUser: onlineUser,
+                                        busyUser: busyUser,
+                                        awayUser: awayUser)
+                                        .prePareUserPhotoSelf(
+                                        uid: widget
+                                            .auth.currentUser.uid),
+
+                                    // child: CircleAvatar(radius: 18,backgroundImage: NetworkImage("https://images-na.ssl-images-amazon.com/images/I/71Y2Ov9rHaL._SL1500_.jpg",)),
+                                  ),
+                                ),
+                                //getNameFromIdR
+                                Container(width: MediaQuery.of(context).size.width-50,
+                                  child: FetchUserNameWidget(
+                                    uid: widget.auth.currentUser.uid,color: Colors.black,
+                                  ),
                                 ),
 
-                                // child: CircleAvatar(radius: 18,backgroundImage: NetworkImage("https://images-na.ssl-images-amazon.com/images/I/71Y2Ov9rHaL._SL1500_.jpg",)),
-
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        getNameFromIdWithStyle(
-                                            widget.auth.currentUser.uid,
-                                            TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                            widget.auth),
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              5, 0, 0, 0),
-                                          child: InkWell(
-                                            onTap: () {
-                                              showD(String n) {
-                                                final AlertDialog dialog =
-                                                    AlertDialog(
-                                                  title: Text(
-                                                      'Update display name'),
-                                                  content: TextFormField(
-                                                    onChanged: (val) async {
-                                                      var url = Uri.parse(
-                                                          AppSettings()
-                                                                  .Api_link +
-                                                              'editUserName?id=' +
-                                                              widget
-                                                                  .auth
-                                                                  .currentUser
-                                                                  .uid +
-                                                              "&&name=" +
-                                                              val);
-                                                      var response = await http.get(url);
-                                                    },
-                                                    initialValue: "",
-                                                    decoration: InputDecoration(
-                                                      contentPadding:
-                                                          EdgeInsets.all(10),
-                                                    ),
-                                                  ),
-                                                  actions: [
-                                                    FlatButton(
-                                                      textColor:
-                                                          Color(0xFF6200EE),
-                                                      onPressed: () =>
-                                                          Navigator.pop(
-                                                              context),
-                                                      child: Text('Done'),
-                                                    ),
-                                                  ],
-                                                );
-
-                                                //dialog
-                                                showDialog<void>(context: context, builder: (context) => dialog);
-                                              }
-
-                                        //  dynamic  a = await    getUserInfo(widget.auth.currentUser.uid);
-                                            //  showD(a["name"]);
-                                            },
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.fromLTRB(
-                                                      0, 0, 5, 0),
-                                              child: Text(
-                                                "Change",
-                                                style: TextStyle(
-                                                    color: Theme.of(context)
-                                                        .primaryColor,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.fromLTRB(0, 0, 5, 0),
-                                      child: Text(
-                                          widget.auth.currentUser.email !=
-                                                      null &&
-                                                  widget.auth.currentUser.email
-                                                          .length >
-                                                      0
-                                              ? (widget.auth.currentUser.email)
-                                              : (widget.auth.currentUser
-                                                  .phoneNumber)),
-                                    ),
-                                    InkWell(
-                                      onTap: () async {
-                                        FilePickerResult result =
-                                            await FilePicker.platform
-                                                .pickFiles();
-
-                                        if (result != null) {
-                                          PlatformFile file =
-                                              result.files.first;
-
-                                          print(file.name);
-                                          // print(file.bytes);
-                                          // _base64 = BASE64.encode(response.bodyBytes);
-                                          String base =
-                                              base64.encode(file.bytes);
-
-                                          String url =
-                                              "https://talk.maulaji.com/uploadfilemessenger.php";
-
-                                          print(file.size);
-                                          print(file.extension);
-                                          print(file.path);
-                                          //print("base");
-                                          // print(base);
-
-                                          var response = await http.post(
-                                              Uri.parse(url),
-                                              body: jsonEncode({
-                                                'name': file.name,
-                                                'file': base,
-                                                'ex': file.extension
-                                              }));
-                                          print(
-                                              'Response status: ${response.statusCode}');
-                                          print(response.body);
-                                          dynamic res =
-                                              jsonDecode(response.body);
-                                          if (res["status"]) {
-                                            var url = Uri.parse(AppSettings()
-                                                    .Api_link +
-                                                'editUserPhoto?id=' +
-                                                widget.auth.currentUser.uid +
-                                                "&&photo=" +
-                                                res["path"]);
-                                            var response = await http.get(url);
-
-                                            print(
-                                                'Response body: ${response.body}');
-                                            //res["path"]
-                                            // widget.firestore
-                                            //     .collection("users")
-                                            //     .where("uid",
-                                            //         isEqualTo: widget
-                                            //             .auth.currentUser.uid)
-                                            //     .get()
-                                            //     .then((value) {
-                                            //   widget.firestore
-                                            //       .collection("users")
-                                            //       .doc(value.docs.first.id)
-                                            //       .update(
-                                            //           {"photo": res["path"]});
-                                            // });
-                                          } else {
-                                            print("could not save");
-                                          }
-                                        } else {
-                                          // User canceled the picker
-                                        }
-                                      },
-                                      child: Text(
-                                        "Change Photo",
-                                        style: TextStyle(
-                                            color:
-                                                Theme.of(context).primaryColor),
-                                      ),
-                                    ),
-                                  ],
-                                )
+                                // CommonFunctions(
+                                //         firestore: widget.firestore,
+                                //         auth: widget.auth,
+                                //         onlineUser: onlineUser)
+                                //     .getNameFromIdR(
+                                //         style: false,
+                                //         id: widget.auth.currentUser.uid)
 
                                 //Text(widget.sharedPreferences.get("uphoto")),
                               ],
                             ),
                           ),
-                          InkWell(
-                            onTap: () async {
-                              SharedPreferences prefs;
-                              Future<SharedPreferences> _prefs =
-                                  SharedPreferences.getInstance();
-                              prefs = await _prefs;
-                              prefs.setString("uStatus", "online");
-                              SelfStatusStream.getInstance()
-                                  .dataReload("online");
-                            },
-                            child: Wrap(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text("Online"),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: button,
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Container(
+            color: Colors.grey,
+            height: 0.5,
+            width: MediaQuery.of(context).size.width,
+          ),
+          InkWell(
+            onTap: () {
+              //pop up search box here
+              SimpleDialog d =     SimpleDialog(
+                title: Text('Set backup account'),
+                children: [
+                  SearchPeopleActivity(
+                    auth: widget.auth,
+                    clicked: searchItemClicked,
+                    searchClosed: searchClosed,
+                  )
+                ],
+              );
+
+              AlertDialog alert = AlertDialog(
+                // title: Text("Add New"),
+                content: Container(width: MediaQuery.of(context).size.width>1000?400:MediaQuery.of(context).size.width,height: 400,
+                  child: SearchPeopleActivity(
+                    auth: widget.auth,
+                    clicked: searchItemClicked,
+                    searchClosed: searchClosed,
+                  ),
+                ),
+
+              );
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return alert;
+                },
+              );
+
+              // showDialog<void>(context: context, builder: (context) =>  Container(width: 400,height: 400,
+              //   child:d,
+              // ));
+              // showDialog<void>(context: context, builder: (context) =>  Container(width: 400,
+              //   child: SearchPeopleActivity(
+              //     auth: widget.auth,
+              //     clicked: searchItemClicked,
+              //     searchClosed: searchClosed,
+              //   ),
+              // ));
+              // Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (context) =>
+              //             SearchPeopleActivity(
+              //               auth: widget.auth,
+              //               clicked: searchItemClicked,
+              //               searchClosed: searchClosed,
+              //             )));
+
+              // setState(() {
+              //   widget.isSearchModeOn = true;
+              // });
+            },
+            child: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding:
+                    EdgeInsets.fromLTRB(7, 10, 7, 10),
+                    child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border:
+                          Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.all(
+                              Radius.circular(
+                                  3.0) //                 <--- border radius here
+                          ),
+                        ),
+                        width:
+                        MediaQuery.of(context).size.width,
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Row(
+                            children: [
+                              Center(
+                                  child: Icon(Icons.search)),
+                              Padding(
+                                padding:
+                                const EdgeInsets.fromLTRB(
+                                    10, 0, 0, 0),
+                                child: Center(
+                                    child: Text("Search")),
+                              ),
+                            ],
+                          ),
+                        )),
+                  ),
+                )
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+            child: Container(
+              height: 50,
+              child: Row(
+                children: [
+                  Expanded(
+                      child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              widget.selectedTabMenu = 0;
+                            });
+                          },
+                          child: Column(
+                            children: [
+                              Icon(Icons.chat,
+                                  color:
+                                  widget.selectedTabMenu ==
+                                      0
+                                      ? Theme.of(context)
+                                      .primaryColor
+                                      : Colors.grey),
+                              Center(
+                                  child: Text(
+                                    "Chat",
+                                    style: TextStyle(
+                                        color:
+                                        widget.selectedTabMenu ==
+                                            0
+                                            ? Theme.of(
+                                            context)
+                                            .primaryColor
+                                            : Colors.grey),
+                                  )),
+                            ],
+                          ))),
+                  Expanded(
+                      child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              widget.selectedTabMenu = 1;
+                            });
+                          },
+                          child: Column(
+                            children: [
+                              Icon(Icons.contacts,
+                                  color:
+                                  widget.selectedTabMenu ==
+                                      1
+                                      ? Theme.of(context)
+                                      .primaryColor
+                                      : Colors.grey),
+                              Center(
+                                  child: Text(
+                                    "Contacts",
+                                    style: TextStyle(
+                                        color:
+                                        widget.selectedTabMenu ==
+                                            1
+                                            ? Theme.of(
+                                            context)
+                                            .primaryColor
+                                            : Colors.grey),
+                                  )),
+                            ],
+                          ))),
+                  Expanded(
+                      child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              widget.selectedTabMenu = 2;
+                            });
+                          },
+                          child: Column(
+                            children: [
+                              Icon(Icons.group,
+                                  color:
+                                  widget.selectedTabMenu ==
+                                      2
+                                      ? Theme.of(context)
+                                      .primaryColor
+                                      : Colors.grey),
+                              Center(
+                                  child: Text(
+                                    "Group Chat",
+                                    style: TextStyle(
+                                        color:
+                                        widget.selectedTabMenu ==
+                                            2
+                                            ? Theme.of(
+                                            context)
+                                            .primaryColor
+                                            : Colors.grey),
+                                  )),
+                            ],
+                          ))),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: 1,
+              color: Colors.grey,
+            ),
+          ),
+          getSmallTab(widget.width, widget.isMobileView),
+
+        ],
+      ),
+    );
+
+    return Stack(
+      children: [
+        Align(
+          alignment: Alignment.topCenter,
+          child: Column(
+            //shrinkWrap: true,
+            children: [
+              Container(
+                height: 70,
+                color: Color.fromARGB(255, 238, 246, 255),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                  child: Container(
+                    height: 50,
+                    child: Center(
+                      child: Stack(
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  widget.showMiniProfile = true;
+                                });
+                              },
+                              child: Center(
+                                child: Row(
+                                  children: [
+                                    Container(width: 50,
+                                      child: Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            0, 0, 10, 0),
+                                        // child: prePareUserPhoto(widget.auth,
+                                        //     widget.auth.currentUser.uid),
+                                        child: CommonFunctions(
+                                                auth: widget.auth,
+                                                onlineUser: onlineUser,
+                                                busyUser: busyUser,
+                                                awayUser: awayUser)
+                                            .prePareUserPhotoSelf(
+                                                uid: widget
+                                                    .auth.currentUser.uid),
+
+                                        // child: CircleAvatar(radius: 18,backgroundImage: NetworkImage("https://images-na.ssl-images-amazon.com/images/I/71Y2Ov9rHaL._SL1500_.jpg",)),
+                                      ),
+                                    ),
+                                    //getNameFromIdR
+                                    Container(width: MediaQuery.of(context).size.width-50,
+                                      child: FetchUserNameWidget(
+                                        uid: widget.auth.currentUser.uid,color: Colors.black,
+                                      ),
+                                    ),
+
+                                    // CommonFunctions(
+                                    //         firestore: widget.firestore,
+                                    //         auth: widget.auth,
+                                    //         onlineUser: onlineUser)
+                                    //     .getNameFromIdR(
+                                    //         style: false,
+                                    //         id: widget.auth.currentUser.uid)
+
+                                    //Text(widget.sharedPreferences.get("uphoto")),
+                                  ],
                                 ),
-                                StreamBuilder(
-                                    stream:
-                                        SelfStatusStream.getInstance().outData,
-                                    builder: (BuildContext context,
-                                        AsyncSnapshot<String> snapshot) {
-                                      if (snapshot.hasData &&
-                                          snapshot.data != null) {
-                                        print("some stream");
-                                        print(snapshot.data);
-                                        return snapshot.data == "online"
-                                            ? Icon(Icons.done)
-                                            : Container(
-                                                height: 0,
-                                                width: 0,
-                                              );
-                                      } else
-                                        return FutureBuilder(
-                                            future: getUserStatus(),
-                                            builder: (BuildContext context,
-                                                AsyncSnapshot<String>
-                                                    snapshot) {
-                                              if (snapshot.hasData &&
-                                                  snapshot.data != null) {
-                                                print("some stream");
-                                                print(snapshot.data);
-                                                return snapshot.data == "online"
-                                                    ? Icon(Icons.done)
-                                                    : Container(
-                                                        height: 0,
-                                                        width: 0,
-                                                      );
-                                              } else
-                                                return Text("");
-                                            });
-                                    }),
-                              ],
+                              ),
                             ),
                           ),
-                          InkWell(
-                            onTap: () async {
-                              SharedPreferences prefs;
-                              Future<SharedPreferences> _prefs =
-                                  SharedPreferences.getInstance();
-                              prefs = await _prefs;
-                              prefs.setString("uStatus", "away");
-                              SelfStatusStream.getInstance().dataReload("away");
-                            },
-                            child: Wrap(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text("Away"),
-                                ),
-                                StreamBuilder(
-                                    stream:
-                                        SelfStatusStream.getInstance().outData,
-                                    builder: (BuildContext context,
-                                        AsyncSnapshot<String> snapshot) {
-                                      if (snapshot.hasData &&
-                                          snapshot.data != null) {
-                                        print("some stream");
-                                        print(snapshot.data);
-                                        return snapshot.data == "away"
-                                            ? Icon(Icons.done)
-                                            : Container(
-                                                height: 0,
-                                                width: 0,
-                                              );
-                                      } else
-                                        return FutureBuilder(
-                                            future: getUserStatus(),
-                                            builder: (BuildContext context,
-                                                AsyncSnapshot<String>
-                                                    snapshot) {
-                                              if (snapshot.hasData &&
-                                                  snapshot.data != null) {
-                                                print("some stream");
-                                                print(snapshot.data);
-                                                return snapshot.data == "away"
-                                                    ? Icon(Icons.done)
-                                                    : Container(
-                                                        height: 0,
-                                                        width: 0,
-                                                      );
-                                              } else
-                                                return Text("");
-                                            });
-                                    }),
-                              ],
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () async {
-                              SharedPreferences prefs;
-                              Future<SharedPreferences> _prefs =
-                                  SharedPreferences.getInstance();
-                              prefs = await _prefs;
-                              prefs.setString("uStatus", "busy");
-                              SelfStatusStream.getInstance().dataReload("busy");
-                            },
-                            child: Wrap(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text("Busy"),
-                                ),
-                                StreamBuilder(
-                                    stream:
-                                        SelfStatusStream.getInstance().outData,
-                                    builder: (BuildContext context,
-                                        AsyncSnapshot<String> snapshot) {
-                                      if (snapshot.hasData &&
-                                          snapshot.data != null) {
-                                        print("some stream");
-                                        print(snapshot.data);
-                                        return snapshot.data == "busy"
-                                            ? Icon(Icons.done)
-                                            : Container(
-                                                height: 0,
-                                                width: 0,
-                                              );
-                                      } else
-                                        return FutureBuilder(
-                                            future: getUserStatus(),
-                                            builder: (BuildContext context,
-                                                AsyncSnapshot<String>
-                                                    snapshot) {
-                                              if (snapshot.hasData &&
-                                                  snapshot.data != null) {
-                                                print("some stream");
-                                                print(snapshot.data);
-                                                return snapshot.data == "busy"
-                                                    ? Icon(Icons.done)
-                                                    : Container(
-                                                        height: 0,
-                                                        width: 0,
-                                                      );
-                                              } else
-                                                return Text("");
-                                            });
-                                    }),
-                              ],
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () async {
-                              SharedPreferences prefs;
-                              Future<SharedPreferences> _prefs =
-                                  SharedPreferences.getInstance();
-                              prefs = await _prefs;
-                              prefs.setString("uStatus", "offline");
-                              SelfStatusStream.getInstance()
-                                  .dataReload("offline");
-                            },
-                            child: Wrap(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text("Offline"),
-                                ),
-                                StreamBuilder(
-                                    stream:
-                                        SelfStatusStream.getInstance().outData,
-                                    builder: (BuildContext context,
-                                        AsyncSnapshot<String> snapshot) {
-                                      if (snapshot.hasData &&
-                                          snapshot.data != null) {
-                                        print("some stream");
-                                        print(snapshot.data);
-                                        return snapshot.data == "offline"
-                                            ? Icon(Icons.done)
-                                            : Container(
-                                                height: 0,
-                                                width: 0,
-                                              );
-                                      } else
-                                        return FutureBuilder(
-                                            future: getUserStatus(),
-                                            builder: (BuildContext context,
-                                                AsyncSnapshot<String>
-                                                    snapshot) {
-                                              if (snapshot.hasData &&
-                                                  snapshot.data != null) {
-                                                print("some stream");
-                                                print(snapshot.data);
-                                                return snapshot.data ==
-                                                        "offline"
-                                                    ? Icon(Icons.done)
-                                                    : Container(
-                                                        height: 0,
-                                                        width: 0,
-                                                      );
-                                              } else
-                                                return Text("");
-                                            });
-                                    }),
-                              ],
-                            ),
-                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: button,
+                          )
                         ],
                       ),
                     ),
-                  ))
-              : Container(
-                  height: 0,
-                  width: 0,
+                  ),
                 ),
-        ],
-      ),
+              ),
+              Container(
+                color: Colors.grey,
+                height: 0.5,
+                width: MediaQuery.of(context).size.width,
+              ),
+              InkWell(
+                onTap: () {
+                  //pop up search box here
+                  SimpleDialog d =     SimpleDialog(
+                    title: Text('Set backup account'),
+                    children: [
+                      SearchPeopleActivity(
+                        auth: widget.auth,
+                        clicked: searchItemClicked,
+                        searchClosed: searchClosed,
+                      )
+                    ],
+                  );
+
+                  AlertDialog alert = AlertDialog(
+                    // title: Text("Add New"),
+                    content: Container(width: MediaQuery.of(context).size.width>1000?400:MediaQuery.of(context).size.width,height: 400,
+                      child: SearchPeopleActivity(
+                        auth: widget.auth,
+                        clicked: searchItemClicked,
+                        searchClosed: searchClosed,
+                      ),
+                    ),
+
+                  );
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return alert;
+                    },
+                  );
+
+                  // showDialog<void>(context: context, builder: (context) =>  Container(width: 400,height: 400,
+                  //   child:d,
+                  // ));
+                  // showDialog<void>(context: context, builder: (context) =>  Container(width: 400,
+                  //   child: SearchPeopleActivity(
+                  //     auth: widget.auth,
+                  //     clicked: searchItemClicked,
+                  //     searchClosed: searchClosed,
+                  //   ),
+                  // ));
+                  // Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //         builder: (context) =>
+                  //             SearchPeopleActivity(
+                  //               auth: widget.auth,
+                  //               clicked: searchItemClicked,
+                  //               searchClosed: searchClosed,
+                  //             )));
+
+                  // setState(() {
+                  //   widget.isSearchModeOn = true;
+                  // });
+                },
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Padding(
+                        padding:
+                        EdgeInsets.fromLTRB(7, 10, 7, 10),
+                        child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border:
+                              Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.all(
+                                  Radius.circular(
+                                      3.0) //                 <--- border radius here
+                              ),
+                            ),
+                            width:
+                            MediaQuery.of(context).size.width,
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Row(
+                                children: [
+                                  Center(
+                                      child: Icon(Icons.search)),
+                                  Padding(
+                                    padding:
+                                    const EdgeInsets.fromLTRB(
+                                        10, 0, 0, 0),
+                                    child: Center(
+                                        child: Text("Search")),
+                                  ),
+                                ],
+                              ),
+                            )),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                child: Container(
+                  height: 50,
+                  child: Row(
+                    children: [
+                      Expanded(
+                          child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  widget.selectedTabMenu = 0;
+                                });
+                              },
+                              child: Column(
+                                children: [
+                                  Icon(Icons.chat,
+                                      color:
+                                      widget.selectedTabMenu ==
+                                          0
+                                          ? Theme.of(context)
+                                          .primaryColor
+                                          : Colors.grey),
+                                  Center(
+                                      child: Text(
+                                        "Chat",
+                                        style: TextStyle(
+                                            color:
+                                            widget.selectedTabMenu ==
+                                                0
+                                                ? Theme.of(
+                                                context)
+                                                .primaryColor
+                                                : Colors.grey),
+                                      )),
+                                ],
+                              ))),
+                      Expanded(
+                          child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  widget.selectedTabMenu = 1;
+                                });
+                              },
+                              child: Column(
+                                children: [
+                                  Icon(Icons.contacts,
+                                      color:
+                                      widget.selectedTabMenu ==
+                                          1
+                                          ? Theme.of(context)
+                                          .primaryColor
+                                          : Colors.grey),
+                                  Center(
+                                      child: Text(
+                                        "Contacts",
+                                        style: TextStyle(
+                                            color:
+                                            widget.selectedTabMenu ==
+                                                1
+                                                ? Theme.of(
+                                                context)
+                                                .primaryColor
+                                                : Colors.grey),
+                                      )),
+                                ],
+                              ))),
+                      Expanded(
+                          child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  widget.selectedTabMenu = 2;
+                                });
+                              },
+                              child: Column(
+                                children: [
+                                  Icon(Icons.group,
+                                      color:
+                                      widget.selectedTabMenu ==
+                                          2
+                                          ? Theme.of(context)
+                                          .primaryColor
+                                          : Colors.grey),
+                                  Center(
+                                      child: Text(
+                                        "Group Chat",
+                                        style: TextStyle(
+                                            color:
+                                            widget.selectedTabMenu ==
+                                                2
+                                                ? Theme.of(
+                                                context)
+                                                .primaryColor
+                                                : Colors.grey),
+                                      )),
+                                ],
+                              ))),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: 1,
+                  color: Colors.grey,
+                ),
+              ),
+              getSmallTab(widget.width, widget.isMobileView),
+
+            ],
+          ),
+        ),
+        widget.showMiniProfile
+            ? Positioned(
+                left: 0,
+                right: 0,
+                top: 60,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 15, 8, 15),
+                  child: Card(
+                    color: Colors.white,
+                    elevation: 8,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 80,
+                          child: Stack(
+                            children: [
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Padding(
+                                  padding: EdgeInsets.all(10),
+                                  child: Image.asset(
+                                    "assets/talkapp.png",
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      widget.showMiniProfile = false;
+                                    });
+                                  },
+                                  child: Padding(
+                                      padding: EdgeInsets.all(10),
+                                      child: Icon(Icons.close)),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                        // ListTile(
+                        //   title: Padding(
+                        //     padding: EdgeInsets.all(0),
+                        //     child: Image.asset(
+                        //       "assets/maulaji_sqr.png",
+                        //       height: 50,
+                        //       width: ,
+                        //       fit: BoxFit.cover,
+                        //     ),
+                        //   ),
+                        //   onTap: () {
+                        //     setState(() {
+                        //       widget.showMiniProfile = false;
+                        //     });
+                        //   },
+                        //   trailing: Icon(Icons.close),
+                        // ),
+                        Divider(),
+                        Center(
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 0, 10, 0),
+                                child: CommonFunctions(
+                                        auth: widget.auth,
+                                        onlineUser: onlineUser,
+                                        busyUser: busyUser,
+                                        awayUser: awayUser)
+                                    .prePareUserPhoto(
+                                        uid: widget.auth.currentUser.uid),
+                                // child: prePareUserPhoto(widget.auth,
+                                //     widget.auth.currentUser.uid)
+                              ),
+
+                              // child: CircleAvatar(radius: 18,backgroundImage: NetworkImage("https://images-na.ssl-images-amazon.com/images/I/71Y2Ov9rHaL._SL1500_.jpg",)),
+
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      getNameFromIdWithStyle(
+                                          widget.auth.currentUser.uid,
+                                          TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                          widget.auth),
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            5, 0, 0, 0),
+                                        child: InkWell(
+                                          onTap: () {
+                                            showD(String n) {
+                                              final AlertDialog dialog =
+                                                  AlertDialog(
+                                                title: Text(
+                                                    'Update display name'),
+                                                content: TextFormField(
+                                                  onChanged: (val) async {
+                                                    var url = Uri.parse(
+                                                        AppSettings()
+                                                                .Api_link +
+                                                            'editUserName?id=' +
+                                                            widget
+                                                                .auth
+                                                                .currentUser
+                                                                .uid +
+                                                            "&&name=" +
+                                                            val);
+                                                    var response = await http.get(url);
+                                                  },
+                                                  initialValue: "",
+                                                  decoration: InputDecoration(
+                                                    contentPadding:
+                                                        EdgeInsets.all(10),
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  FlatButton(
+                                                    textColor:
+                                                        Color(0xFF6200EE),
+                                                    onPressed: () =>
+                                                        Navigator.pop(
+                                                            context),
+                                                    child: Text('Done'),
+                                                  ),
+                                                ],
+                                              );
+
+                                              //dialog
+                                              showDialog<void>(context: context, builder: (context) => dialog);
+                                            }
+
+                                      //  dynamic  a = await    getUserInfo(widget.auth.currentUser.uid);
+                                          //  showD(a["name"]);
+                                          },
+                                          child: Padding(
+                                            padding:
+                                                const EdgeInsets.fromLTRB(
+                                                    0, 0, 5, 0),
+                                            child: Text(
+                                              "Change",
+                                              style: TextStyle(
+                                                  color: Theme.of(context)
+                                                      .primaryColor,
+                                                  fontWeight:
+                                                      FontWeight.bold),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(0, 0, 5, 0),
+                                    child: Text(
+                                        widget.auth.currentUser.email !=
+                                                    null &&
+                                                widget.auth.currentUser.email
+                                                        .length >
+                                                    0
+                                            ? (widget.auth.currentUser.email)
+                                            : (widget.auth.currentUser
+                                                .phoneNumber)),
+                                  ),
+                                  InkWell(
+                                    onTap: () async {
+                                      FilePickerResult result =
+                                          await FilePicker.platform
+                                              .pickFiles();
+
+                                      if (result != null) {
+                                        PlatformFile file =
+                                            result.files.first;
+
+                                        print(file.name);
+                                        // print(file.bytes);
+                                        // _base64 = BASE64.encode(response.bodyBytes);
+                                        String base =
+                                            base64.encode(file.bytes);
+
+                                        String url =
+                                            "https://talk.maulaji.com/uploadfilemessenger.php";
+
+                                        print(file.size);
+                                        print(file.extension);
+                                        print(file.path);
+                                        //print("base");
+                                        // print(base);
+
+                                        var response = await http.post(
+                                            Uri.parse(url),
+                                            body: jsonEncode({
+                                              'name': file.name,
+                                              'file': base,
+                                              'ex': file.extension
+                                            }));
+                                        print(
+                                            'Response status: ${response.statusCode}');
+                                        print(response.body);
+                                        dynamic res =
+                                            jsonDecode(response.body);
+                                        if (res["status"]) {
+                                          var url = Uri.parse(AppSettings()
+                                                  .Api_link +
+                                              'editUserPhoto?id=' +
+                                              widget.auth.currentUser.uid +
+                                              "&&photo=" +
+                                              res["path"]);
+                                          var response = await http.get(url);
+
+                                          print(
+                                              'Response body: ${response.body}');
+                                          //res["path"]
+                                          // widget.firestore
+                                          //     .collection("users")
+                                          //     .where("uid",
+                                          //         isEqualTo: widget
+                                          //             .auth.currentUser.uid)
+                                          //     .get()
+                                          //     .then((value) {
+                                          //   widget.firestore
+                                          //       .collection("users")
+                                          //       .doc(value.docs.first.id)
+                                          //       .update(
+                                          //           {"photo": res["path"]});
+                                          // });
+                                        } else {
+                                          print("could not save");
+                                        }
+                                      } else {
+                                        // User canceled the picker
+                                      }
+                                    },
+                                    child: Text(
+                                      "Change Photo",
+                                      style: TextStyle(
+                                          color:
+                                              Theme.of(context).primaryColor),
+                                    ),
+                                  ),
+                                ],
+                              )
+
+                              //Text(widget.sharedPreferences.get("uphoto")),
+                            ],
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () async {
+                            SharedPreferences prefs;
+                            Future<SharedPreferences> _prefs =
+                                SharedPreferences.getInstance();
+                            prefs = await _prefs;
+                            prefs.setString("uStatus", "online");
+                            SelfStatusStream.getInstance()
+                                .dataReload("online");
+                          },
+                          child: Wrap(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text("Online"),
+                              ),
+                              StreamBuilder(
+                                  stream:
+                                      SelfStatusStream.getInstance().outData,
+                                  builder: (BuildContext context,
+                                      AsyncSnapshot<String> snapshot) {
+                                    if (snapshot.hasData &&
+                                        snapshot.data != null) {
+                                      print("some stream");
+                                      print(snapshot.data);
+                                      return snapshot.data == "online"
+                                          ? Icon(Icons.done)
+                                          : Container(
+                                              height: 0,
+                                              width: 0,
+                                            );
+                                    } else
+                                      return FutureBuilder(
+                                          future: getUserStatus(),
+                                          builder: (BuildContext context,
+                                              AsyncSnapshot<String>
+                                                  snapshot) {
+                                            if (snapshot.hasData &&
+                                                snapshot.data != null) {
+                                              print("some stream");
+                                              print(snapshot.data);
+                                              return snapshot.data == "online"
+                                                  ? Icon(Icons.done)
+                                                  : Container(
+                                                      height: 0,
+                                                      width: 0,
+                                                    );
+                                            } else
+                                              return Text("");
+                                          });
+                                  }),
+                            ],
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () async {
+                            SharedPreferences prefs;
+                            Future<SharedPreferences> _prefs =
+                                SharedPreferences.getInstance();
+                            prefs = await _prefs;
+                            prefs.setString("uStatus", "away");
+                            SelfStatusStream.getInstance().dataReload("away");
+                          },
+                          child: Wrap(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text("Away"),
+                              ),
+                              StreamBuilder(
+                                  stream:
+                                      SelfStatusStream.getInstance().outData,
+                                  builder: (BuildContext context,
+                                      AsyncSnapshot<String> snapshot) {
+                                    if (snapshot.hasData &&
+                                        snapshot.data != null) {
+                                      print("some stream");
+                                      print(snapshot.data);
+                                      return snapshot.data == "away"
+                                          ? Icon(Icons.done)
+                                          : Container(
+                                              height: 0,
+                                              width: 0,
+                                            );
+                                    } else
+                                      return FutureBuilder(
+                                          future: getUserStatus(),
+                                          builder: (BuildContext context,
+                                              AsyncSnapshot<String>
+                                                  snapshot) {
+                                            if (snapshot.hasData &&
+                                                snapshot.data != null) {
+                                              print("some stream");
+                                              print(snapshot.data);
+                                              return snapshot.data == "away"
+                                                  ? Icon(Icons.done)
+                                                  : Container(
+                                                      height: 0,
+                                                      width: 0,
+                                                    );
+                                            } else
+                                              return Text("");
+                                          });
+                                  }),
+                            ],
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () async {
+                            SharedPreferences prefs;
+                            Future<SharedPreferences> _prefs =
+                                SharedPreferences.getInstance();
+                            prefs = await _prefs;
+                            prefs.setString("uStatus", "busy");
+                            SelfStatusStream.getInstance().dataReload("busy");
+                          },
+                          child: Wrap(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text("Busy"),
+                              ),
+                              StreamBuilder(
+                                  stream:
+                                      SelfStatusStream.getInstance().outData,
+                                  builder: (BuildContext context,
+                                      AsyncSnapshot<String> snapshot) {
+                                    if (snapshot.hasData &&
+                                        snapshot.data != null) {
+                                      print("some stream");
+                                      print(snapshot.data);
+                                      return snapshot.data == "busy"
+                                          ? Icon(Icons.done)
+                                          : Container(
+                                              height: 0,
+                                              width: 0,
+                                            );
+                                    } else
+                                      return FutureBuilder(
+                                          future: getUserStatus(),
+                                          builder: (BuildContext context,
+                                              AsyncSnapshot<String>
+                                                  snapshot) {
+                                            if (snapshot.hasData &&
+                                                snapshot.data != null) {
+                                              print("some stream");
+                                              print(snapshot.data);
+                                              return snapshot.data == "busy"
+                                                  ? Icon(Icons.done)
+                                                  : Container(
+                                                      height: 0,
+                                                      width: 0,
+                                                    );
+                                            } else
+                                              return Text("");
+                                          });
+                                  }),
+                            ],
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () async {
+                            SharedPreferences prefs;
+                            Future<SharedPreferences> _prefs =
+                                SharedPreferences.getInstance();
+                            prefs = await _prefs;
+                            prefs.setString("uStatus", "offline");
+                            SelfStatusStream.getInstance()
+                                .dataReload("offline");
+                          },
+                          child: Wrap(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text("Offline"),
+                              ),
+                              StreamBuilder(
+                                  stream:
+                                      SelfStatusStream.getInstance().outData,
+                                  builder: (BuildContext context,
+                                      AsyncSnapshot<String> snapshot) {
+                                    if (snapshot.hasData &&
+                                        snapshot.data != null) {
+                                      print("some stream");
+                                      print(snapshot.data);
+                                      return snapshot.data == "offline"
+                                          ? Icon(Icons.done)
+                                          : Container(
+                                              height: 0,
+                                              width: 0,
+                                            );
+                                    } else
+                                      return FutureBuilder(
+                                          future: getUserStatus(),
+                                          builder: (BuildContext context,
+                                              AsyncSnapshot<String>
+                                                  snapshot) {
+                                            if (snapshot.hasData &&
+                                                snapshot.data != null) {
+                                              print("some stream");
+                                              print(snapshot.data);
+                                              return snapshot.data ==
+                                                      "offline"
+                                                  ? Icon(Icons.done)
+                                                  : Container(
+                                                      height: 0,
+                                                      width: 0,
+                                                    );
+                                            } else
+                                              return Text("");
+                                          });
+                                  }),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ))
+            : Container(
+                height: 0,
+                width: 0,
+              ),
+      ],
     );
   }
 
@@ -997,6 +1274,83 @@ class _SectorOneState extends State<SectorOne> {
       }
 
       //  return  Text(MediaQuery.of(context).size.width.toString());
+      //void Function(dynamic) doSomething;
+      return Container(height: MediaQuery.of(context).size.height-230,
+        child: StreamBuilder<List>(
+            stream: LastMessagesStream.getInstance().outData,
+            builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
+              if (snapshot.hasData &&
+                  snapshot.data != null &&
+                  snapshot.data.length > 0) {
+                return ListView.separated(padding: EdgeInsets.zero,
+                    separatorBuilder: (context, index) => Divider(
+
+                    ),
+                     physics: ClampingScrollPhysics(),
+                    //physics: AlwaysScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: snapshot.data.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      //  return Text(d[index]["uid"]);
+                      return Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          child: ListTile(
+                              onTap: () {
+                                print(snapshot.data[index]["uid"]);
+                                // setState(() {
+                                //   widget.selectedItemId =d[index]["uid"];
+                                // });
+
+                                doSomething(snapshot.data[index]["uid"]);
+                                // setState(() {
+                                //   // widget.chatBody = filtereData[index];
+                                //   widget.selectedItemId =
+                                //       widget.Sum[index].data()["receiver"] ==
+                                //               widget.firebaseAuth.currentUser.uid
+                                //           ? widget.Sum[index].data()["sender"]
+                                //           : widget.Sum[index].data()["receiver"];
+                                // });
+                                //
+                                // setState(() {
+                                //   //  widget.widgetparent.chatBody =  widget.Sum[index];
+                                //   widget.widgetparent.selectedItem = index;
+                                // });
+                                // if (widget.widgetparent.showMobileView) {
+                                //   setState(() {
+                                //     widget.widgetparent.mobileViewLevel = 2;
+                                //
+                                //   });
+                                // }
+                              },
+                              subtitle:
+                              Text(snapshot.data[index]["data"]["message"]),
+                              leading: CommonFunctions(
+                                  auth: FirebaseAuth.instance,
+                                  onlineUser: onlineUser,
+                                  busyUser: busyUser,
+                                  awayUser: awayUser)
+                                  .prePareUserPhoto(
+                                  uid: snapshot.data[index]["uid"]),
+                              //  title: FetchUserNameWidget(uid: d[index]["uid"] ,)),
+                              //  title: getUserName(d[index]["uid"])),
+                              title: FetchUserNameWidget(
+                                uid: snapshot.data[index]["uid"],
+                              ))
+
+                        // title:getNameFromIdR(
+                        //   d[index]["uid"],
+                        //   false,
+                        //   widget.firestore,
+                        //   widget.firebaseAuth) ,),
+                      );
+                    });
+              } else {
+                return Center(
+                  child: Text("No Chat history"),
+                );
+              }
+            }),
+      );
 
       return LastChatWIdgetStream(
         width: width,
@@ -1086,7 +1440,7 @@ class _SectorOneState extends State<SectorOne> {
         return jsonDecode(response.body);
       }
 
-      return Container(
+      return Container(height: MediaQuery.of(context).size.height-230,
         width: width,
         child: FutureBuilder<List>(
             future: getFndList(),
@@ -1094,7 +1448,9 @@ class _SectorOneState extends State<SectorOne> {
               if (snapshot.hasData &&
                   snapshot.data != null &&
                   snapshot.data.length > 0) {
-                return ListView.builder(
+                return ListView.separated(padding: EdgeInsets.zero,
+                  separatorBuilder: (context, index) => Divider(
+                  ),
                   shrinkWrap: true,
                   physics: ClampingScrollPhysics(),
                   itemCount: snapshot.data.length,
@@ -1191,7 +1547,7 @@ class _SectorOneState extends State<SectorOne> {
             }
           });
     } else if (widget.selectedTabMenu == 2) {
-      return Container(
+      return Container(height: MediaQuery.of(context).size.height-230,
         width: width,
         child: Column(
           children: [
@@ -1377,7 +1733,9 @@ class _SectorOneState extends State<SectorOne> {
                 future: getMyGroups(),
                 builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
                   if (snapshot.hasData && snapshot.data.length > 0) {
-                    return ListView.builder(
+                    return ListView.separated(padding: EdgeInsets.zero,
+                        separatorBuilder: (context, index) => Divider(
+                        ),
                         shrinkWrap: true,
                         itemCount: snapshot.data.length,
                         itemBuilder: (BuildContext context, int index) {
@@ -1419,16 +1777,18 @@ class _SectorOneState extends State<SectorOne> {
         fit: BoxFit.cover,
       )));
     } else {
-      call(dynamic data) {
+      call(dynamic data,String type) {
         print(data);
         try {
-          CommonFunctions(auth: widget.auth).initCallIntent(
-              socket: widget.socket,
-              callTYpe: "v",
-              ownid: widget.auth.currentUser.uid,
-              partner: data,
-              isCaller: true,
-              context: context);
+         if(mounted){
+           CommonFunctions(auth: widget.auth).initCallIntent(
+               socket: widget.socket,
+               callTYpe:type,
+               ownid: widget.auth.currentUser.uid,
+               partner: data,
+               isCaller: true,
+               context: context);
+         }
         } catch (e) {
           print("exceptio of call");
           print(e.toString());
@@ -1475,20 +1835,17 @@ class _SectorOneState extends State<SectorOne> {
       //     ],
       //   ),
       // );
-      widget.chatWidgetUpdate(Container(
-        width: MediaQuery.of(context).size.width,
-        child: SingleChatThread(
-            whileCall: false,
-            socket: widget.socket,
-            showMobileView: widget.isMobileView,
-            // messagebody: w,
-            // showFndAddDlg: sad,
-            chatBody: cBody,
-            auth: widget.auth,
-            call: call,
-            room: r,
-            nameBar: nameBar),
-      ));
+      widget.chatWidgetUpdate(SingleChatThread(
+          whileCall: false,
+          socket: widget.socket,
+          showMobileView: widget.isMobileView,
+          // messagebody: w,
+          // showFndAddDlg: sad,
+          chatBody: cBody,
+          auth: widget.auth,
+          call: call,
+          room: r,
+          nameBar: nameBar));
     }
   }
 
@@ -1748,8 +2105,9 @@ class _SearchPeopleActivityState extends State<SearchPeopleActivity> {
 class FetchUserNameWidget extends StatefulWidget {
   FirebaseAuth auth;
   String uid;
+  Color color;
 
-  FetchUserNameWidget({this.uid});
+  FetchUserNameWidget({this.uid,this.color});
 
   String name = "Please wait";
 
@@ -1779,7 +2137,7 @@ class _FetchUserNameWidgetState extends State<FetchUserNameWidget> {
         future: getData(),
         builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data != null) {
-            return Text(snapshot.data["name"]);
+            return Text(snapshot.data["name"],style: TextStyle(color: widget.color!=null?widget.color:Colors.black),);
           } else {
             return Text("Please wait");
           }
@@ -1961,22 +2319,26 @@ class LastChatWIdgetStream extends StatefulWidget {
 class _LastChatWIdgetStreamState extends State<LastChatWIdgetStream> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: widget.width,
+    return SingleChildScrollView(
+     // width: widget.width,
       child: StreamBuilder<List>(
           stream: LastMessagesStream.getInstance().outData,
           builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
             if (snapshot.hasData &&
                 snapshot.data != null &&
                 snapshot.data.length > 0) {
-              return ListView.builder(
-                physics: ClampingScrollPhysics(),
+              return ListView.separated(padding: EdgeInsets.zero,
+                  separatorBuilder: (context, index) => Divider(
+
+                  ),
+               // physics: ClampingScrollPhysics(),
+                physics: AlwaysScrollableScrollPhysics(),
                   shrinkWrap: true,
                   itemCount: snapshot.data.length,
                   itemBuilder: (BuildContext context, int index) {
                     //  return Text(d[index]["uid"]);
                     return Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                        padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                         child: ListTile(
                             onTap: () {
                               print(snapshot.data[index]["uid"]);

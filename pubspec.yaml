@@ -44,7 +44,7 @@ dependencies:
 
   flutter_webrtc:
   sdp_transform: ^0.3.0
-  audioplayers: ^0.18.3
+  audioplayers:
   path_provider: ^2.0.1
   country_list_pick:
   #web_socket_channel: ^2.0.0
@@ -59,6 +59,7 @@ dependencies:
   #emoji_pick: ^0.1.0
   video_player: ^2.1.1
   emojis:
+  #firebase_crashlytics: ^2.0.5
   #drop_zone:
   #emoji_chooser:
   #jitsi_meet: ^4.0.0
@@ -91,6 +92,7 @@ flutter:
     - assets/no_photo.png
     - assets/skype-ringtone.mp3
     - assets/passive.mp3
+    - assets/ring.mp3
     - assets/maulaji_sqr.png
     - assets/background.png
     - assets/splash_app.jpg
